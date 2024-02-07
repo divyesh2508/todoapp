@@ -1,7 +1,7 @@
 # ToDo-app-node-js-express-js-mongodb
 
 # first clone project on your PC
---> sudo git clone (URL)
+--> sudo git clone https://github.com/divyesh2508/todoapp.git
 
 # Create docker network
 --> sudo docker network create todoapp_network
@@ -20,5 +20,5 @@
 
 # Congratulation create successfully!
 
-# create using docker-compose file
+# Create using docker-compose file
 --> docker compose up --build -d
