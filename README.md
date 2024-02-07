@@ -23,7 +23,5 @@ The objective of this project is to design and deploy a multi-service applicatio
 ## create todoapp container as follow command
  `sudo docker run -d --network todoapp_network -p 3000:3000 --restart always --name todoserver todo`
 
-## congratulation create successfully!
-
 ## create using docker-compose file
  `docker compose up --build -d`
