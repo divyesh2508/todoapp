@@ -3,10 +3,10 @@
 # first clone project on your PC
 --> sudo git clone https://github.com/divyesh2508/todoapp.git
 
-# Create docker network
+# create docker network
 --> sudo docker network create todoapp_network
 
-# Create docker volume
+# create docker volume
 --> sudo docker volume create my-test-volume 
 
 # create mongo container as follow command 
@@ -18,7 +18,7 @@
 # create todoapp container as follow command
 --> sudo docker run -d --network todoapp_network -p 3000:3000 --restart always --name todoserver todo
 
-# Congratulation create successfully!
+# congratulation create successfully!
 
-# Create using docker-compose file
+# create using docker-compose file
 --> docker compose up --build -d
