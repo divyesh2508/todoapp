@@ -6,7 +6,7 @@ The objective of this project is to design and deploy a multi-service applicatio
 ## Commands for Run the Project
 
 ## First clone project on your PC
- `sudo git clone https://github.com/divyesh2508/todoapp.git`
+ ```sudo git clone https://github.com/divyesh2508/todoapp.git```
 
 ## Create docker network
  `sudo docker network create todoapp_network`
