@@ -25,7 +25,7 @@ The objective of this project is to design and deploy a multi-service applicatio
  `sudo docker run -d --network todoapp_network -p 3000:3000 --restart always --name todoserver todo`
 
 ## Create using docker-compose file
- `docker compose up --build -d`
+ `docker-compose up --build -d`
 
 ## Connect the website using 3000 port
 `http://localhost:3000/`
