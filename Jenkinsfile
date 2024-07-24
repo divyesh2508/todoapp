@@ -6,7 +6,7 @@ pipeline {
         IMAGE_TAG = "latest"
         AWS_REGION = "ap-south-1"
         AWS_DEFAULT_REGION = "ap-south-1"
-        AWS_ACCOUNT_URL = "https://910253526187.dkr.ecr.ap-south-1.amazonaws.com"
+        AWS_ACCOUNT_URL = "910253526187.dkr.ecr.ap-south-1.amazonaws.com"  // Changed to avoid URL formatting issues
         INSTANCE_IP = '13.200.160.5'
         SONARQUBE_SERVER = 'SonarQube'  // Name of the SonarQube server as configured in Jenkins
         SONARQUBE_TOKEN = 'squ_168a793386e0b0b5951d56208e7c4a360ef79ac8'  // The token generated from SonarQube
@@ -31,7 +31,9 @@ pipeline {
                 echo 'Running Trivy Scan'
                 script {
                     docker.image('aquasec/trivy:latest').inside {
-                        sh "trivy image --severity HIGH,CRITICAL ${AWS_ACCOUNT_URL}/${IMAGE_NAME}:${IMAGE_TAG}"
+                        sh """
+                        trivy image --severity HIGH,CRITICAL ${AWS_ACCOUNT_URL}/${IMAGE_NAME}:${IMAGE_TAG}
+                        """
                     }
                 }
             }
