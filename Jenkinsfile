@@ -6,7 +6,7 @@ pipeline {
     AWS_REGION = "ap-south-1"
     AWS_DEFAULT_REGION = "ap-south-1"
     AWS_ACCOUNT_URL = "https://910253526187.dkr.ecr.ap-south-1.amazonaws.com"
-    INSTANCE_IP = '13.201.6.7'
+    INSTANCE_IP = '13.200.160.5'
   }
   stages {
     stage('Build'){ 

@@ -8,7 +8,7 @@ var app = express();
 var port = process.env.PORT || 3000;
 
 //db connection with mongoose(mongodb)
-mongoose.connect("mongodb://admin:admin@13.201.6.7:28018/", {
+mongoose.connect("mongodb://admin:admin@13.200.160.5:28018/", {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
