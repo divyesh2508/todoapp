@@ -30,17 +30,9 @@ pipeline {
             steps {
                 echo 'Running Trivy Scan'
                 script {
-                    // Ensure Trivy is installed and run the scan
-                    sh '''
-                        if ! command -v trivy &> /dev/null
-                        then
-                            echo "Trivy could not be found, installing..."
-                            apt-get update && apt-get install -y wget
-                            wget https://github.com/aquasecurity/trivy/releases/download/v0.41.0/trivy_0.41.0_Linux-64bit.deb
-                            dpkg -i trivy_0.41.0_Linux-64bit.deb
-                        fi
-                        trivy image --severity HIGH,CRITICAL ${AWS_ACCOUNT_URL}/${IMAGE_NAME}:${IMAGE_TAG}
-                    '''
+                    docker.image('aquasec/trivy:latest').inside {
+                        sh "trivy image --severity HIGH,CRITICAL ${AWS_ACCOUNT_URL}/${IMAGE_NAME}:${IMAGE_TAG}"
+                    }
                 }
             }
         }
