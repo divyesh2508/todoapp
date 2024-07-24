@@ -8,10 +8,10 @@ let app = express();
 let port = process.env.PORT || 3000;
 
 //db connection with mongoose(mongodb)
-mongoose.connect("mongodb://admin:admin@13.200.160.5:28018/", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-});
+// mongoose.connect("mongodb://admin:admin@13.200.160.5:28018/", {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true
+// });
 
 //to get the css file from public folder
 app.use(express.static(__dirname + '/public'));
