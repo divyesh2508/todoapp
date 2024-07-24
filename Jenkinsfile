@@ -23,7 +23,7 @@ pipeline {
     }
     stage('Deploy') {
           steps {
-            sshagent (credentials: ['aws-creds']) {
+            sshagent (credentials: ['todo-key']) {
                 sh '''
              
                 ssh -o StrictHostKeyChecking=no 'jenkins'@$INSTANCE_IP "sh /apps/deploy-todo-app.sh"
