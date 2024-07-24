@@ -9,7 +9,7 @@ pipeline {
         AWS_ACCOUNT_URL = "https://910253526187.dkr.ecr.ap-south-1.amazonaws.com"
         INSTANCE_IP = '13.200.160.5'
         SONARQUBE_SERVER = 'SonarQube'
-        SLACK_CHANNEL = '#jenkins' // Change this to your Slack channel
+        SLACK_CHANNEL = '#jenkin' // Change this to your Slack channel
         SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3' // The ID of the Slack credential you created in Jenkins
  
     }
