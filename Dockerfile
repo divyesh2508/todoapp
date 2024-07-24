@@ -1,17 +1,27 @@
+# Base image
 FROM node:14
 
+# Install Trivy
+RUN apt-get update && \
+    apt-get install -y wget && \
+    wget https://github.com/aquasecurity/trivy/releases/download/v0.41.0/trivy_0.41.0_Linux-64bit.deb && \
+    dpkg -i trivy_0.41.0_Linux-64bit.deb && \
+    rm trivy_0.41.0_Linux-64bit.deb
+
+# Set working directory
 WORKDIR /app
 
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
+# Install dependencies
 RUN npm install
-# RUN npm install -g sonarqube-scanner
-RUN npm install sonarqube-scanner --save-dev
 
-
+# Copy the rest of the application code
 COPY . .
 
+# Expose the port the app runs on
 EXPOSE 3000
 
-CMD ["node", "app.js"]
-
+# Command to run the application
+CMD ["npm", "start"]
