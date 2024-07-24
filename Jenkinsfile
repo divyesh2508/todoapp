@@ -9,7 +9,6 @@ pipeline {
         AWS_ACCOUNT_URL = "https://910253526187.dkr.ecr.ap-south-1.amazonaws.com"
         INSTANCE_IP = '13.200.160.5'
         SONARQUBE_SERVER = 'SonarQube'
-        SONARQUBE_TOKEN = 'squ_168a793386e0b0b5951d56208e7c4a360ef79ac8'
     }
 
     stages {
@@ -26,16 +25,18 @@ pipeline {
             }
         }
 
-    stage('SonarQube Analysis') {
-        steps {
-              echo 'Running SonarQube Analysis'
-              script {
-                  withSonarQubeEnv('SonarQube') {
-                      sh 'sonar-scanner'
-                   }
-              }
-           }
-      }
+        stage('SonarQube Analysis') {
+            steps {
+                echo 'Running SonarQube Analysis'
+                script {
+                    docker.image('sonarsource/sonar-scanner-cli:latest').inside {
+                        withSonarQubeEnv('SonarQube') {
+                            sh 'sonar-scanner'
+                        }
+                    }
+                }
+            }
+        }
 
         stage('Deploy') {
             steps {
