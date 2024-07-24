@@ -1,9 +1,15 @@
 pipeline {
-    agent {
-        docker {
-            image 'aquasec/trivy:latest' // Use a Trivy Docker image
-            args '-v /var/jenkins_home/workspace/todo-app/todo:/app'
-        }
+    agent any
+
+    environment {
+        IMAGE_NAME = "todo-app"
+        IMAGE_TAG = "latest"
+        AWS_REGION = "ap-south-1"
+        AWS_DEFAULT_REGION = "ap-south-1"
+        AWS_ACCOUNT_URL = "https://910253526187.dkr.ecr.ap-south-1.amazonaws.com"
+        INSTANCE_IP = '13.200.160.5'
+        SONARQUBE_SERVER = 'SonarQube'
+        SONARQUBE_TOKEN = 'squ_168a793386e0b0b5951d56208e7c4a360ef79ac8'
     }
 
     stages {
@@ -20,23 +26,16 @@ pipeline {
             }
         }
 
-        stage('Trivy Scan') {
-            steps {
-                echo 'Running Trivy Scan'
-                sh 'trivy fs --security-checks vuln,config /app'
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                echo 'Running SonarQube Analysis'
-                script {
-                    withSonarQubeEnv('SonarQube') {
-                        sh 'sonar-scanner'
-                    }
-                }
-            }
-        }
+    stage('SonarQube Analysis') {
+        steps {
+              echo 'Running SonarQube Analysis'
+              script {
+                  withSonarQubeEnv('SonarQube') {
+                      sh 'sonar-scanner'
+                   }
+              }
+           }
+      }
 
         stage('Deploy') {
             steps {
