@@ -26,14 +26,9 @@ pipeline {
             }
         }
 
-        stage('Trivy Scan') {
-            steps {
-                echo 'Running Trivy Scan'
-                script {
-                    docker.image("${IMAGE_NAME}:${IMAGE_TAG}").inside {
-                        sh "trivy image --severity HIGH,CRITICAL ${IMAGE_NAME}:${IMAGE_TAG}"
-                    }
-                }
+        stage ('TRIVY SCAN'){
+            steps{
+                sh "trivy fs --security-checks vuln, config /var/jenkins_home/workspace/todo-app/todo"
             }
         }
 
