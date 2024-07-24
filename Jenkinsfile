@@ -8,8 +8,7 @@ pipeline {
         AWS_DEFAULT_REGION = "ap-south-1"
         AWS_ACCOUNT_URL = "https://910253526187.dkr.ecr.ap-south-1.amazonaws.com"
         INSTANCE_IP = '13.200.160.5'
-        SONARQUBE_SERVER = 'SonarQube'  // Name of the SonarQube server as configured in Jenkins
-        SONARQUBE_TOKEN = 'squ_168a793386e0b0b5951d56208e7c4a360ef79ac8'  // The token generated from SonarQube
+        SONARQUBE_SERVER = 'SonarQube'
     }
 
     stages {
@@ -30,8 +29,10 @@ pipeline {
             steps {
                 echo 'Running SonarQube Analysis'
                 script {
-                    withSonarQubeEnv('SonarQube') {
-                        sh 'sonar-scanner'
+                    docker.image('sonarsource/sonar-scanner-cli:latest').inside {
+                        withSonarQubeEnv('SonarQube') {
+                            sh 'sonar-scanner'
+                        }
                     }
                 }
             }
