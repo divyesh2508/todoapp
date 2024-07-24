@@ -5,7 +5,7 @@ pipeline {
         stage('Install Trivy') {
             steps {
                 sh '''
-                    wget https://github.com/aquasecurity/trivy/releases/download/v0.41.0/trivy_0.41.0_Linux-64bit.deb
+                    curl -LO https://github.com/aquasecurity/trivy/releases/download/v0.41.0/trivy_0.41.0_Linux-64bit.deb
                     sudo dpkg -i trivy_0.41.0_Linux-64bit.deb
                     rm trivy_0.41.0_Linux-64bit.deb
                 '''
