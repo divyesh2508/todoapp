@@ -5,7 +5,8 @@ WORKDIR /app
 COPY package*.json ./
 
 RUN npm install
-RUN npm install -g sonarqube-scanner
+# RUN npm install -g sonarqube-scanner
+RUN npm install sonarqube-scanner --save-dev
 
 
 COPY . .
