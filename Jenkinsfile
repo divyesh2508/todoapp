@@ -31,7 +31,6 @@ pipeline {
             steps {
                 echo 'Running Trivy Scan'
                script {
-                    docker.image("${DOCKER_IMAGE}/${IMAGE_NAME}:${IMAGE_TAG}").inside {
                         sh "trivy image --severity HIGH,CRITICAL ${IMAGE_NAME}:${IMAGE_TAG}"
                     }
                 }
