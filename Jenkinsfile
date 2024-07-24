@@ -8,7 +8,8 @@ pipeline {
         AWS_DEFAULT_REGION = "ap-south-1"
         AWS_ACCOUNT_URL = "https://910253526187.dkr.ecr.ap-south-1.amazonaws.com"
         INSTANCE_IP = '13.200.160.5'
-        SONARQUBE_SERVER = 'SonarQube'
+        SONARQUBE_SERVER = 'SonarQube'  // Name of the SonarQube server as configured in Jenkins
+        SONARQUBE_TOKEN = 'squ_168a793386e0b0b5951d56208e7c4a360ef79ac8'  // The token generated from SonarQube
     }
 
     stages {
@@ -25,14 +26,31 @@ pipeline {
             }
         }
 
+        stage('Trivy Scan') {
+            steps {
+                echo 'Running Trivy Scan'
+                script {
+                    // Ensure Trivy is installed and run the scan
+                    sh '''
+                        if ! command -v trivy &> /dev/null
+                        then
+                            echo "Trivy could not be found, installing..."
+                            apt-get update && apt-get install -y wget
+                            wget https://github.com/aquasecurity/trivy/releases/download/v0.41.0/trivy_0.41.0_Linux-64bit.deb
+                            dpkg -i trivy_0.41.0_Linux-64bit.deb
+                        fi
+                        trivy image --severity HIGH,CRITICAL ${AWS_ACCOUNT_URL}/${IMAGE_NAME}:${IMAGE_TAG}
+                    '''
+                }
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 echo 'Running SonarQube Analysis'
                 script {
-                    docker.image('sonarsource/sonar-scanner-cli:latest').inside {
-                        withSonarQubeEnv('SonarQube') {
-                            sh 'sonar-scanner'
-                        }
+                    withSonarQubeEnv('SonarQube') {
+                        sh 'sonar-scanner'
                     }
                 }
             }
