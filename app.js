@@ -1,11 +1,11 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var mongoose = require('mongoose');
+let express = require('express');
+let bodyParser = require('body-parser');
+let mongoose = require('mongoose');
 
 
-var app = express();
+let app = express();
 
-var port = process.env.PORT || 3000;
+let port = process.env.PORT || 3000;
 
 //db connection with mongoose(mongodb)
 mongoose.connect("mongodb://admin:admin@13.200.160.5:28018/", {
@@ -21,11 +21,11 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 
 //mongoose schema
-var todoSchema = new mongoose.Schema({
+let todoSchema = new mongoose.Schema({
     name: String
 });
 
-var Todo = mongoose.model("Todo", todoSchema);
+let Todo = mongoose.model("Todo", todoSchema);
 
 
 //routes
@@ -42,7 +42,7 @@ app.get("/", (req, res)=>{
 
 //route for adding new task
 app.post("/newtodo", (req, res)=>{
-    var newTask = new Todo({
+    let newTask = new Todo({
         name: req.body.task
     });
     //add to db
@@ -59,7 +59,7 @@ app.post("/newtodo", (req, res)=>{
 
 //route to delete a task by id
 app.get("/delete/:id", (req, res)=>{
-    var taskId = req.params.id;//get the id from the api 
+    let taskId = req.params.id;//get the id from the api 
     console.log(req.params.id);
     mongoose.model('Todo').deleteOne({_id: taskId}, (err, result)=>{
         if(err){
@@ -74,7 +74,7 @@ app.get("/delete/:id", (req, res)=>{
 
 //route for deleting all tasks
 app.post("/delAlltodo", (req, res)=>{
-    var myquery = { name: /^O/ };
+    let myquery = { name: /^O/ };
     mongoose.model('Todo').deleteMany({}, (err, result)=>{
         if(err){
             console.log(err);
