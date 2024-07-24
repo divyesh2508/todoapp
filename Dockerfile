@@ -1,10 +1,12 @@
 # Base image
 FROM node:14
 
-# Install Trivy
+# Install dependencies
 RUN apt-get update && \
-    apt-get install -y wget && \
-    wget https://github.com/aquasecurity/trivy/releases/download/v0.41.0/trivy_0.41.0_Linux-64bit.deb && \
+    apt-get install -y wget apt-transport-https
+
+# Install Trivy
+RUN wget https://github.com/aquasecurity/trivy/releases/download/v0.41.0/trivy_0.41.0_Linux-64bit.deb && \
     dpkg -i trivy_0.41.0_Linux-64bit.deb && \
     rm trivy_0.41.0_Linux-64bit.deb
 
