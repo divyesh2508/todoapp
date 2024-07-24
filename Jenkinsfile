@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "your-image-name"
+        IMAGE_NAME = "todo-app"
         IMAGE_TAG = "latest"
         AWS_REGION = "ap-south-1"
         AWS_DEFAULT_REGION = "ap-south-1"
