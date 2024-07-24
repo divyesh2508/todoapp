@@ -1,17 +1,12 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'aquasec/trivy:latest' // Use a Trivy Docker image
+            args '-v /var/jenkins_home/workspace/todo-app/todo:/app'
+        }
+    }
 
     stages {
-        stage('Install Trivy') {
-            steps {
-                sh '''
-                    curl -LO https://github.com/aquasecurity/trivy/releases/download/v0.41.0/trivy_0.41.0_Linux-64bit.deb
-                    sudo dpkg -i trivy_0.41.0_Linux-64bit.deb
-                    rm trivy_0.41.0_Linux-64bit.deb
-                '''
-            }
-        }
-
         stage('Build') {
             steps {
                 echo 'Building'
@@ -25,9 +20,10 @@ pipeline {
             }
         }
 
-        stage ('TRIVY SCAN'){
-            steps{
-                sh "trivy fs --security-checks vuln,config /var/jenkins_home/workspace/todo-app/todo"
+        stage('Trivy Scan') {
+            steps {
+                echo 'Running Trivy Scan'
+                sh 'trivy fs --security-checks vuln,config /app'
             }
         }
 
