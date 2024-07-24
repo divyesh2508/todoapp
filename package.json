@@ -13,5 +13,8 @@
     "ejs": "^3.1.5",
     "express": "^4.18.2",
     "mongoose": "^5.11.7"
+  },
+  "devDependencies": {
+    "sonarqube-scanner": "^4.0.1"
   }
 }
