@@ -26,7 +26,7 @@ pipeline {
             sshagent (credentials: ['todo-key']) {
                 sh '''
              
-                ssh -o StrictHostKeyChecking=no 'ubuntu'@$INSTANCE_IP "sh /apps/deploy-todo-app.sh"
+                ssh -o StrictHostKeyChecking=no 'jenkins'@$INSTANCE_IP "sh /apps/deploy-todo-app.sh"
     
                 '''
              }
