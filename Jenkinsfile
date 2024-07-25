@@ -8,8 +8,8 @@ pipeline {
         AWS_DEFAULT_REGION = "ap-south-1"
         AWS_ACCOUNT_URL = "https://910253526187.dkr.ecr.ap-south-1.amazonaws.com"
         INSTANCE_IP = '13.200.160.5'
-        SLACK_CHANNEL = '#jenkin'
-        SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3'
+        SLACK_CHANNEL = '#jenkin' // Change this to your Slack channel
+        SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3' // The ID of the Slack credential you created in Jenkins
     }
 
     stages {
@@ -30,7 +30,7 @@ pipeline {
             steps {
                 sshagent(credentials: ['todo-key']) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no 'jenkins'@$INSTANCE_IP "sh /apps/deploy-todo-app.sh"
+                        ssh -o StrictHostKeyChecking=no 'jenkins@${INSTANCE_IP}' "sh /apps/deploy-todo-app.sh"
                     '''
                 }
             }
@@ -43,7 +43,7 @@ pipeline {
             script {
                 // Collect logs from the latest container
                 def containerLogs = sh(script: """
-                    ssh -o StrictHostKeyChecking=no jenkins@${INSTANCE_IP} 'docker logs $(docker ps -q -f name=todo-app)' || echo 'No logs available'
+                    ssh -o StrictHostKeyChecking=no jenkins@${INSTANCE_IP} 'docker logs \$(docker ps -q -f name=todo-app)' || echo 'No logs available'
                 """, returnStdout: true).trim()
                 
                 // Send container logs to Slack
