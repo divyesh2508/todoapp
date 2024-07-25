@@ -65,21 +65,16 @@ pipeline {
             echo 'Deployment failed'
             script {
                 // Collect logs from the latest container
-                sh 'docker logs $(docker ps -q -f "name=${IMAGE_NAME}") > container.log'
+                sh 'ssh -o StrictHostKeyChecking=no jenkins@${INSTANCE_IP} "docker logs $(docker ps -q -f name=${IMAGE_NAME})" > container.log'
+                def containerLogs = readFile('container.log')
                 // Send container logs to Slack
-                slackUploadFile(
+                slackSend(
                     channel: "${env.SLACK_CHANNEL}",
-                    filePath: 'container.log',
-                    initialComment: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed. Please find the container logs attached.",
+                    color: 'danger',
+                    message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed. Container logs:\n${containerLogs}",
                     tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
                 )
             }
-            slackSend(
-                channel: "${env.SLACK_CHANNEL}",
-                color: 'danger',
-                message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed. Please check the Jenkins logs for details.",
-                tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
-            )
         }
         always {
             cleanWs()
