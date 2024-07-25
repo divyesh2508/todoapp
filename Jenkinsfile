@@ -56,9 +56,9 @@ pipeline {
             echo 'Deployment failed'
             script {
                 // Collect logs from the latest container
-                def containerLogs = sh(script: """
-                    ssh -o StrictHostKeyChecking=no jenkins@${INSTANCE_IP} 'docker logs \$(docker ps -q -f name=todoserver)' || echo 'No logs available'
-                """, returnStdout: true).trim()
+                def containerLogs = sh(script: '''
+                    ssh -o StrictHostKeyChecking=no 'jenkins'@$INSTANCE_IP 'docker logs \$(docker ps -q -f name=todoserver)' || echo 'No logs available'
+                ''', returnStdout: true).trim()
                 
                 // Send container logs to Slack
                 slackSend(
