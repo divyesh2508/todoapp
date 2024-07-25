@@ -11,6 +11,7 @@ pipeline {
         SONARQUBE_SERVER = 'SonarQube'
         SLACK_CHANNEL = '#jenkin' // Change this to your Slack channel
         SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3' // The ID of the Slack credential you created in Jenkins
+ 
     }
 
     stages {
@@ -52,23 +53,27 @@ pipeline {
     }
 
     post {
-        success {
-            echo 'Deployment succeeded'
-            slackSend(channel: "${env.SLACK_CHANNEL}", color: 'good', message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} succeeded", 
-                      tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}")
-        }
-        failure {
-            echo 'Deployment failed'
-            script {
-                // Save build log to a file
-                sh 'cat ${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_NUMBER}/log > build.log'
-                // Send error log to Slack
-                slackUploadFile(channel: "${env.SLACK_CHANNEL}", filePath: 'build.log', initialComment: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed. Please find the log attached.", 
-                                 tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}")
-            }
-        }
-        always {
-            cleanWs()
-        }
+    success {
+        echo 'Deployment succeeded'
+        slackSend(
+            channel: "${env.SLACK_CHANNEL}",
+            color: 'good',
+            message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} succeeded",
+            tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+        )
     }
+    failure {
+        echo 'Deployment failed'
+        slackSend(
+            channel: "${env.SLACK_CHANNEL}",
+            color: 'danger',
+            message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed. Please check the Jenkins logs for details.",
+            tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+        )
+    }
+    always {
+        cleanWs()
+    }
+}
+
 }
