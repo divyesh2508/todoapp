@@ -55,12 +55,12 @@ pipeline {
     post {
       success {
             echo 'Deployment succeeded'
-            slackSend(channel: "${env.SLACK_CHANNEL}", message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} succeeded", 
+            slackSend(channel: "${env.SLACK_CHANNEL}", color: 'good',message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} succeeded", 
                       tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}")
         }
         failure {
             echo 'Deployment failed'
-            slackSend(channel: "${env.SLACK_CHANNEL}", message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed. Please check the Jenkins logs for details.", 
+            slackSend(channel: "${env.SLACK_CHANNEL}",color: 'danger',message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed. Please check the Jenkins logs for details.", 
                       tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}")
         }
         always {
