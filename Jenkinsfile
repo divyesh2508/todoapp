@@ -11,7 +11,6 @@ pipeline {
         SONARQUBE_SERVER = 'SonarQube'
         SLACK_CHANNEL = '#jenkin' // Change this to your Slack channel
         SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3' // The ID of the Slack credential you created in Jenkins
- 
     }
 
     stages {
@@ -53,15 +52,22 @@ pipeline {
     }
 
     post {
-      success {
+        success {
             echo 'Deployment succeeded'
             slackSend(channel: "${env.SLACK_CHANNEL}", message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} succeeded", 
                       tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}")
         }
         failure {
-            echo 'Deployment failed'
-            slackSend(channel: "${env.SLACK_CHANNEL}", message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed. Please check the Jenkins logs for details.", 
-                      tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}")
+            script {
+                if (fileExists('/tmp/rollback_triggered')) {
+                    slackSend(channel: "${env.SLACK_CHANNEL}", message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed and was rolled back to the previous version.", 
+                              tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}")
+                    sh 'rm /tmp/rollback_triggered' // Clean up the trigger file
+                } else {
+                    slackSend(channel: "${env.SLACK_CHANNEL}", message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed. Please check the Jenkins logs for details.", 
+                              tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}")
+                }
+            }
         }
         always {
             cleanWs()
