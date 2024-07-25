@@ -60,10 +60,11 @@ pipeline {
         failure {
             echo 'Deployment failed'
             script {
-                // Capture build logs
-                def buildLog = currentBuild.rawBuild.log.collect { it.toString() }.join('\n')
-                slackSend(channel: "${env.SLACK_CHANNEL}", color: 'danger', message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed.\nLogs:\n${buildLog}", 
-                          tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}")
+                // Save build log to a file
+                sh 'cat ${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_NUMBER}/log > build.log'
+                // Send error log to Slack
+                slackUploadFile(channel: "${env.SLACK_CHANNEL}", filePath: 'build.log', initialComment: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed. Please find the log attached.", 
+                                 tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}")
             }
         }
         always {
