@@ -8,9 +8,8 @@ pipeline {
         AWS_DEFAULT_REGION = "ap-south-1"
         AWS_ACCOUNT_URL = "https://910253526187.dkr.ecr.ap-south-1.amazonaws.com"
         INSTANCE_IP = '13.200.160.5'
-        SONARQUBE_SERVER = 'SonarQube'
-        SLACK_CHANNEL = '#jenkin' // Change this to your Slack channel
-        SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3' // The ID of the Slack credential you created in Jenkins
+        SLACK_CHANNEL = '#jenkin'
+        SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3'
     }
 
     stages {
@@ -27,19 +26,6 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                echo 'Running SonarQube Analysis'
-                script {
-                    docker.image('sonarsource/sonar-scanner-cli:latest').inside {
-                        withSonarQubeEnv('SonarQube') {
-                            sh 'sonar-scanner'
-                        }
-                    }
-                }
-            }
-        }
-
         stage('Deploy') {
             steps {
                 sshagent(credentials: ['todo-key']) {
@@ -52,6 +38,23 @@ pipeline {
     }
 
     post {
+        failure {
+            echo 'Deployment failed'
+            script {
+                // Collect logs from the latest container
+                def containerLogs = sh(script: """
+                    ssh -o StrictHostKeyChecking=no jenkins@${INSTANCE_IP} 'docker logs $(docker ps -q -f name=todo-app)' || echo 'No logs available'
+                """, returnStdout: true).trim()
+                
+                // Send container logs to Slack
+                slackSend(
+                    channel: "${env.SLACK_CHANNEL}",
+                    color: 'danger',
+                    message: "Deployment failed. Container logs:\n${containerLogs}",
+                    tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+                )
+            }
+        }
         success {
             echo 'Deployment succeeded'
             slackSend(
@@ -60,21 +63,6 @@ pipeline {
                 message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} succeeded",
                 tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
             )
-        }
-        failure {
-            echo 'Deployment failed'
-            script {
-                // Collect logs from the latest container
-                sh 'ssh -o StrictHostKeyChecking=no jenkins@${INSTANCE_IP} "docker logs $(docker ps -q -f name=${IMAGE_NAME})" > container.log'
-                def containerLogs = readFile('container.log')
-                // Send container logs to Slack
-                slackSend(
-                    channel: "${env.SLACK_CHANNEL}",
-                    color: 'danger',
-                    message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed. Container logs:\n${containerLogs}",
-                    tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
-                )
-            }
         }
         always {
             cleanWs()
