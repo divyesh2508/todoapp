@@ -55,8 +55,9 @@ pipeline {
         failure {
             echo 'Deployment failed'
             script {
+                 sshagent(credentials: ['todo-key']) {
                 // Collect logs from the latest container
-                def containerLogs (credentials: ['todo-key']) = sh(script: '''
+                def containerLogs = sh(script: '''
                     ssh -o StrictHostKeyChecking=no 'jenkins'@$INSTANCE_IP 'docker logs \$(docker ps -q -f name=todoserver)' || echo 'No logs available'
                 ''', returnStdout: true).trim()
                 
@@ -69,6 +70,7 @@ pipeline {
                 )
             }
         }
+    }
         success {
             echo 'Deployment succeeded'
             slackSend(
