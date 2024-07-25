@@ -56,7 +56,7 @@ pipeline {
             echo 'Deployment failed'
             script {
                 // Collect logs from the latest container
-                def containerLogs = sh(script: '''
+                def containerLogs (credentials: ['todo-key']) = sh(script: '''
                     ssh -o StrictHostKeyChecking=no 'jenkins'@$INSTANCE_IP 'docker logs \$(docker ps -q -f name=todoserver)' || echo 'No logs available'
                 ''', returnStdout: true).trim()
                 
