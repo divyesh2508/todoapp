@@ -8,6 +8,7 @@ pipeline {
         AWS_DEFAULT_REGION = "ap-south-1"
         AWS_ACCOUNT_URL = "https://910253526187.dkr.ecr.ap-south-1.amazonaws.com"
         INSTANCE_IP = '13.200.160.5'
+        SONARQUBE_SERVER = 'SonarQube'
         SLACK_CHANNEL = '#jenkin' // Change this to your Slack channel
         SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3' // The ID of the Slack credential you created in Jenkins
     }
@@ -26,18 +27,31 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                echo 'Running SonarQube Analysis'
+                script {
+                    docker.image('sonarsource/sonar-scanner-cli:latest').inside {
+                        withSonarQubeEnv('SonarQube') {
+                            sh 'sonar-scanner'
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Deploy') {
             steps {
                 sshagent(credentials: ['todo-key']) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no 'jenkins@${INSTANCE_IP}' "sh /apps/deploy-todo-app.sh"
+                        ssh -o StrictHostKeyChecking=no 'jenkins'@$INSTANCE_IP "sh /apps/deploy-todo-app.sh"
                     '''
                 }
             }
         }
     }
 
-    post {
+     post {
         failure {
             echo 'Deployment failed'
             script {
