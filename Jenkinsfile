@@ -57,7 +57,7 @@ pipeline {
             script {
                 // Collect logs from the latest container
                 def containerLogs = sh(script: """
-                    ssh -o StrictHostKeyChecking=no jenkins@${INSTANCE_IP} 'docker logs \$(docker ps -q -f name=todo-app)' || echo 'No logs available'
+                    ssh -o StrictHostKeyChecking=no jenkins@${INSTANCE_IP} 'docker logs \$(docker ps -q -f name=todoserver)' || echo 'No logs available'
                 """, returnStdout: true).trim()
                 
                 // Send container logs to Slack
