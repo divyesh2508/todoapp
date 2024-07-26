@@ -83,7 +83,7 @@ pipeline {
                 "*Status:* Failed\n" +
                 "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}\n" +
                 "*Please review the Jenkins logs for further information.*",
-            message: "*Hello @channel on Test Server Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG}* on branch *${env.GIT_BRANCH}* failed on *${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}*. Please check the Jenkins logs for details.",
+            // message: "*Hello @channel on Test Server Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG}* on branch *${env.GIT_BRANCH}* failed on *${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}*. Please check the Jenkins logs for details.",
             tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
         )
     }
