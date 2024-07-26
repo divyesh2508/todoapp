@@ -11,6 +11,7 @@ pipeline {
         SONARQUBE_SERVER = 'SonarQube'
         SLACK_CHANNEL = '#jenkin' // Change this to your Slack channel
         SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3' // The ID of the Slack credential you created in Jenkins
+ 
     }
 
     stages {
@@ -25,15 +26,10 @@ pipeline {
                     echo "${env.GIT_BRANCH}"
                 }
             }
-        }
-
+        }   
         stage("Trivy Scan") {
-            steps {
-                script {
-                    docker.image('aquasec/trivy:latest').inside {
-                        sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG}"
-                    }
-                }
+            steps{
+               sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
 
@@ -62,26 +58,27 @@ pipeline {
     }
 
     post {
-        success {
-            echo 'Deployment succeeded'
-            slackSend(
-                channel: "${env.SLACK_CHANNEL}",
-                color: 'good',
-                message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} succeeded",
-                tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
-            )
-        }
-        failure {
-            echo 'Deployment failed'
-            slackSend(
-                channel: "${env.SLACK_CHANNEL}",
-                color: 'danger',
-                message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed. Please check the Jenkins logs for details.",
-                tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
-            )
-        }
-        always {
-            cleanWs()
-        }
+    success {
+        echo 'Deployment succeeded'
+        slackSend(
+            channel: "${env.SLACK_CHANNEL}",
+            color: 'good',
+            message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} succeeded",
+            tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+        )
     }
+    failure {
+        echo 'Deployment failed'
+        slackSend(
+            channel: "${env.SLACK_CHANNEL}",
+            color: 'danger',
+            message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed. Please check the Jenkins logs for details.",
+            tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+        )
+    }
+    always {
+        cleanWs()
+    }
+}
+
 }
