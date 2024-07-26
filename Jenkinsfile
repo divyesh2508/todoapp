@@ -63,7 +63,7 @@ pipeline {
         slackSend(
             channel: "${env.SLACK_CHANNEL}",
             color: 'good',
-            message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} succeeded",
+            message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} on branch ${env.GIT_BRANCH} succeeded on ${new Date().format('yyyy-MM-dd HH:mm:ss')}",
             tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
         )
     }
@@ -72,7 +72,7 @@ pipeline {
         slackSend(
             channel: "${env.SLACK_CHANNEL}",
             color: 'danger',
-            message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} failed. Please check the Jenkins logs for details.",
+            message: "Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG} on branch ${env.GIT_BRANCH} failed on ${new Date().format('yyyy-MM-dd HH:mm:ss')}. Please check the Jenkins logs for details.",
             tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
         )
     }
@@ -80,5 +80,6 @@ pipeline {
         cleanWs()
     }
 }
+
 
 }
