@@ -63,7 +63,7 @@ pipeline {
         slackSend(
             channel: "${env.SLACK_CHANNEL}",
             color: 'good',
-            message:":tada: *Deployment Complete!*
+            message:":tada: *Deployment Complete
                     *Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}
                     *Branch:* ${env.GIT_BRANCH}
                     *Status:* Succeeded
