@@ -9,93 +9,65 @@ pipeline {
         AWS_ACCOUNT_URL = "https://910253526187.dkr.ecr.ap-south-1.amazonaws.com"
         INSTANCE_IP = '13.200.160.5'
         SONARQUBE_SERVER = 'SonarQube'
-        SLACK_CHANNEL = '#jenkin'
-        SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3'
+        SLACK_CHANNEL = '#jenkin' // Change this to your Slack channel
+        SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3' // The ID of the Slack credential you created in Jenkins
+        CONTAINER_NAME = 'todoserver'
         LOG_FILE_PATH = '/tmp/old_container_logs.txt'
+ 
     }
 
     stages {
         stage('Build') {
             steps {
+                echo 'Building'
                 script {
-                    def errorMsg = ''
-                    try {
-                        echo 'Building'
-                        def myImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-                        docker.withRegistry("${AWS_ACCOUNT_URL}", "ecr:${AWS_DEFAULT_REGION}:aws-creds") {
-                            myImage.push("${IMAGE_TAG}")
-                        }
-                        echo "${env.GIT_BRANCH}"
-                    } catch (Exception e) {
-                        errorMsg = e.message
-                        currentBuild.result = 'FAILURE'
-                        throw e
-                    } finally {
-                        if (errorMsg) {
-                            currentBuild.description = "Build Error: ${errorMsg}"
-                        }
+                    def myImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+                    docker.withRegistry("${AWS_ACCOUNT_URL}", "ecr:${AWS_DEFAULT_REGION}:aws-creds") {
+                        myImage.push("${IMAGE_TAG}")
                     }
+                    echo "${env.GIT_BRANCH}"
                 }
             }
-        }
+        }   
         stage("Trivy Scan") {
-            steps {
-                script {
-                    def errorMsg = ''
-                    try {
-                        sh(script: "trivy image ${IMAGE_NAME}:${IMAGE_TAG}", returnStdout: true, returnStatus: true).trim()
-                    } catch (Exception e) {
-                        errorMsg = e.message
-                        currentBuild.result = 'FAILURE'
-                        throw e
-                    } finally {
-                        if (errorMsg) {
-                            currentBuild.description = "Trivy Scan Error: ${errorMsg}"
-                        }
-                    }
-                }
+            steps{
+               sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
+
         stage('SonarQube Analysis') {
             steps {
+                echo 'Running SonarQube Analysis'
                 script {
-                    def errorMsg = ''
-                    try {
-                        echo 'Running SonarQube Analysis'
-                        docker.image('sonarsource/sonar-scanner-cli:latest').inside {
-                            withSonarQubeEnv('SonarQube') {
-                                sh 'sonar-scanner'
-                            }
-                        }
-                    } catch (Exception e) {
-                        errorMsg = e.message
-                        currentBuild.result = 'FAILURE'
-                        throw e
-                    } finally {
-                        if (errorMsg) {
-                            currentBuild.description = "SonarQube Analysis Error: ${errorMsg}"
+                    docker.image('sonarsource/sonar-scanner-cli:latest').inside {
+                        withSonarQubeEnv('SonarQube') {
+                            sh 'sonar-scanner'
                         }
                     }
                 }
             }
         }
+
         stage('Deploy') {
             steps {
                 script {
                     def errorMsg = ''
+                    
                     try {
                         sshagent(credentials: ['todo-key']) {
                             sh '''
                                 ssh -o StrictHostKeyChecking=no 'jenkins'@$INSTANCE_IP "sh /apps/deploy-todo-app.sh"
                             '''
                         }
+                        // Capture logs from the container if deployed successfully
+                        containerLogs = sh(script: "docker logs ${CONTAINER_NAME}", returnStdout: true).trim()
                     } catch (Exception e) {
                         errorMsg = e.message
                         currentBuild.result = 'FAILURE'
                         throw e
                     } finally {
                         if (errorMsg) {
-                            currentBuild.description = "Deploy Error: ${errorMsg}"
+                            currentBuild.description = "Deploy Error: ${errorMsg}\n"
                         }
                     }
                 }
@@ -104,18 +76,21 @@ pipeline {
     }
 
     post {
-        success {
-            slackSend(
-                channel: "${env.SLACK_CHANNEL}",
-                color: 'good',
-                message: ":tada: *Hello @channel on Test Server Deployment Completed...* \n" +
-                        "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
-                        "*Branch:* ${env.GIT_BRANCH}\n" +
-                        "*Status:* Succeeded\n" +
-                        "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}"
-            )
-        }
-        failure {
+    success {
+        echo 'Deployment succeeded'
+        slackSend(
+            channel: "${env.SLACK_CHANNEL}",
+            color: 'good',
+            message:":tada: *Hello @channel on Test Server Deployment Completed...* \n" +
+                    "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
+                    "*Branch:* ${env.GIT_BRANCH}\n" +
+                    "*Status:* Succeeded\n" +
+                    "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}",
+            // message: "*Hello @channel on Test Server Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG}* on branch *${env.GIT_BRANCH}* succesfully on *${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}*",
+            tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+        )
+    }
+   failure {
             script {
                 def oldLogs = ''
                 if (fileExists("${env.LOG_FILE_PATH}")) {
@@ -136,8 +111,12 @@ pipeline {
                 )
             }
         }
-        always {
-            cleanWs()
-        }
+    always {
+        cleanWs()
     }
+}
+
+
+
+
 }
