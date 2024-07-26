@@ -5,9 +5,10 @@ let mongoose = require('mongoose');
 let app = express();
 
 let port = process.env.PORT || 3000;
+const mongoURI = process.env.MONGO_URI;
 
 //db connection with mongoose(mongodb)
-mongoose.connect("mongodb://admin:admin@13.200.160.5:28018/", {
+mongoose.connect(mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
