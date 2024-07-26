@@ -30,7 +30,7 @@ pipeline {
 
         stage("OWASP Scan") {
             steps{
-                dependencyCheck additionalArguments: '', odcInstallation: 'DP-check'
+                dependencyCheck additionalArguments: '--data /var/jenkins_home/dependency-check-data', odcInstallation: 'DP-check'
                 dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
