@@ -2,10 +2,7 @@ let express = require('express');
 let bodyParser = require('body-parser');
 let mongoose = require('mongoose');
 
-let helmet = require("helmet");
-
-let example = express();
-example.use(helmet.hidePoweredBy());
+let app = express();
 
 let port = process.env.PORT || 3000;
 const mongoURI = process.env.MONGO_URI;
