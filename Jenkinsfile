@@ -26,6 +26,13 @@ pipeline {
                     echo "${env.GIT_BRANCH}"
                 }
             }
+        }   
+
+        stage("OWASP Scan") {
+            steps{
+                dependencyCheck additionalArguments: '' , odcIntallation: 'DP-Check'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
         }
 
         stage('SonarQube Analysis') {
