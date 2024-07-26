@@ -73,7 +73,7 @@ app.get("/delete/:id", (req, res)=>{
 
 //route for deleting all tasks
 app.post("/delAlltodo", (req, res)=>{
-    let myquery = { name: /^O/ };
+    // let  = { name: /^O/ };
     mongoose.model('Todo').deleteMany({}, (err, result)=>{
         if(err){
             console.log(err);
