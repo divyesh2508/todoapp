@@ -12,7 +12,6 @@ pipeline {
         SLACK_CHANNEL = '#jenkin' // Change this to your Slack channel
         SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3' // The ID of the Slack credential you created in Jenkins
         CONTAINER_NAME = 'todoserver'
-        LOG_FILE_PATH = '/tmp/old_container_logs.txt'
  
     }
 
@@ -50,26 +49,10 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                script {
-                    def errorMsg = ''
-                    
-                    try {
-                        sshagent(credentials: ['todo-key']) {
-                            sh '''
-                                ssh -o StrictHostKeyChecking=no 'jenkins'@$INSTANCE_IP "sh /apps/deploy-todo-app.sh"
-                            '''
-                        }
-                        // Capture logs from the container if deployed successfully
-                        containerLogs = sh(script: "docker logs ${CONTAINER_NAME}", returnStdout: true).trim()
-                    } catch (Exception e) {
-                        errorMsg = e.message
-                        currentBuild.result = 'FAILURE'
-                        throw e
-                    } finally {
-                        if (errorMsg) {
-                            currentBuild.description = "Deploy Error: ${errorMsg}\n"
-                        }
-                    }
+                sshagent(credentials: ['todo-key']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no 'jenkins'@$INSTANCE_IP "sh /apps/deploy-todo-app.sh"
+                    '''
                 }
             }
         }
@@ -90,27 +73,21 @@ pipeline {
             tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
         )
     }
-   failure {
-            script {
-                def oldLogs = ''
-                if (fileExists("${env.LOG_FILE_PATH}")) {
-                    oldLogs = readFile("${env.LOG_FILE_PATH}").trim()
-                }
-                slackSend(
-                    channel: "${env.SLACK_CHANNEL}",
-                    color: 'danger',
-                    message: ":alert: *Hello @channel on Test Server Deployment Failed...* :alert: \n" +
-                            "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
-                            "*Branch:* ${env.GIT_BRANCH}\n" +
-                            "*Status:* Failed\n" +
-                            "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}\n" +
-                            "*Error Log:* ${currentBuild.description}\n" +
-                            "*Old Container Logs:* ```${oldLogs}```\n" +
-                            "*Please review the Jenkins logs for further information.*",
-                    tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
-                )
-            }
-        }
+    failure {
+        echo 'Deployment failed'
+        slackSend(
+            channel: "${env.SLACK_CHANNEL}",
+            color: 'danger',
+            message:":alert: *Hello @channel on Test Server Deployment Failed...* :alert: \n" +
+                "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
+                "*Branch:* ${env.GIT_BRANCH}\n" +
+                "*Status:* Failed\n" +
+                "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}\n" +
+                "*Please review the Jenkins logs for further information.*",
+            // message: "*Hello @channel on Test Server Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG}* on branch *${env.GIT_BRANCH}* failed on *${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}*. Please check the Jenkins logs for details.",
+            tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+        )
+    }
     always {
         cleanWs()
     }
