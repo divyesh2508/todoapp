@@ -27,7 +27,11 @@ pipeline {
                 }
             }
         }   
-
+        stage("Trivy Scan") {
+            steps{
+               sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG}"
+            }
+        }
         stage("OWASP Scan") {
             steps{
                 dependencyCheck additionalArguments: '', odcInstallation: 'DP-check'
