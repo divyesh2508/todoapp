@@ -16,12 +16,7 @@ pipeline {
         ENV_FILE_PATH = ".env"
         AWS_CREDENTIALS_ID = 'aws-creds'
     }
-    agent {
-        docker {
-            image 'amazon/aws-cli:latest'
-            args '-u root:root' // run as root to avoid permission issues
-        }
-    }
+
     stages {
         stage('Build') {
             steps {
