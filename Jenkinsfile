@@ -13,7 +13,7 @@ pipeline {
         SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3'
         CONTAINER_NAME = 'todoserver'
         S3_BUCKET_NAME = "my-todo-app-test"
-        ENV_FILE_PATH = "/.env"
+        ENV_FILE_PATH = ".env"
         AWS_CREDENTIALS_ID = 'aws-creds'
     }
 
