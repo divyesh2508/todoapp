@@ -9,12 +9,12 @@ pipeline {
         AWS_ACCOUNT_URL = "https://910253526187.dkr.ecr.ap-south-1.amazonaws.com"
         INSTANCE_IP = '13.200.160.5'
         SONARQUBE_SERVER = 'SonarQube'
-        SLACK_CHANNEL = '#jenkin' // Change this to your Slack channel
-        SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3' // The ID of the Slack credential you created in Jenkins
+        SLACK_CHANNEL = '#jenkin'
+        SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3'
         CONTAINER_NAME = 'todoserver'
         S3_BUCKET_NAME = "my-todo-app-test"
         ENV_FILE_PATH = "/.env"
-        AWS_CREDENTIALS_ID = 'aws-creds' // ID of the stored AWS credentials
+        AWS_CREDENTIALS_ID = 'aws-creds'
     }
 
     stages {
@@ -37,7 +37,7 @@ pipeline {
                     echo "${env.GIT_BRANCH}"
                 }
             }
-
+        }
 
         stage('Deploy') {
             steps {
@@ -82,5 +82,4 @@ pipeline {
             cleanWs()
         }
     }
-}
 }
