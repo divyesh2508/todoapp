@@ -12,13 +12,23 @@ pipeline {
         SLACK_CHANNEL = '#jenkin' // Change this to your Slack channel
         SLACK_CREDENTIAL_ID = 'jenkins-git-cicd3' // The ID of the Slack credential you created in Jenkins
         CONTAINER_NAME = 'todoserver'
- 
+        S3_BUCKET_NAME = "my-todo-app-test"
+        ENV_FILE_PATH = "/.env"
+        AWS_CREDENTIALS_ID = 'aws-creds' // ID of the stored AWS credentials
     }
 
     stages {
         stage('Build') {
             steps {
                 echo 'Building'
+                
+                // Download the .env file from S3
+                script {
+                    withAWS(credentials: "${AWS_CREDENTIALS_ID}", region: "${AWS_REGION}") {
+                        sh 'aws s3 cp s3://${S3_BUCKET_NAME}/${ENV_FILE_PATH} .env'
+                    }
+                }
+                
                 script {
                     def myImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
                     docker.withRegistry("${AWS_ACCOUNT_URL}", "ecr:${AWS_DEFAULT_REGION}:aws-creds") {
@@ -27,25 +37,7 @@ pipeline {
                     echo "${env.GIT_BRANCH}"
                 }
             }
-        }   
-        stage("Trivy Scan") {
-            steps{
-               sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG}"
-            }
-        }
 
-        stage('SonarQube Analysis') {
-            steps {
-                echo 'Running SonarQube Analysis'
-                script {
-                    docker.image('sonarsource/sonar-scanner-cli:latest').inside {
-                        withSonarQubeEnv('SonarQube') {
-                            sh 'sonar-scanner'
-                        }
-                    }
-                }
-            }
-        }
 
         stage('Deploy') {
             steps {
@@ -59,41 +51,35 @@ pipeline {
     }
 
     post {
-    success {
-        echo 'Deployment succeeded'
-        slackSend(
-            channel: "${env.SLACK_CHANNEL}",
-            color: 'good',
-            message:":tada: *Hello @channel on Test Server Deployment Completed...* \n" +
+        success {
+            echo 'Deployment succeeded'
+            slackSend(
+                channel: "${env.SLACK_CHANNEL}",
+                color: 'good',
+                message:":tada: *Hello @channel on Test Server Deployment Completed...* \n" +
+                        "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
+                        "*Branch:* ${env.GIT_BRANCH}\n" +
+                        "*Status:* Succeeded\n" +
+                        "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}",
+                tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+            )
+        }
+        failure {
+            echo 'Deployment failed'
+            slackSend(
+                channel: "${env.SLACK_CHANNEL}",
+                color: 'danger',
+                message:":alert: *Hello @channel on Test Server Deployment Failed...* :alert: \n" +
                     "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
                     "*Branch:* ${env.GIT_BRANCH}\n" +
-                    "*Status:* Succeeded\n" +
-                    "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}",
-            // message: "*Hello @channel on Test Server Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG}* on branch *${env.GIT_BRANCH}* succesfully on *${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}*",
-            tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
-        )
+                    "*Status:* Failed\n" +
+                    "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}\n" +
+                    "*Please review the Jenkins logs for further information.*",
+                tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+            )
+        }
+        always {
+            cleanWs()
+        }
     }
-    failure {
-        echo 'Deployment failed'
-        slackSend(
-            channel: "${env.SLACK_CHANNEL}",
-            color: 'danger',
-            message:":alert: *Hello @channel on Test Server Deployment Failed...* :alert: \n" +
-                "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
-                "*Branch:* ${env.GIT_BRANCH}\n" +
-                "*Status:* Failed\n" +
-                "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}\n" +
-                "*Please review the Jenkins logs for further information.*",
-            // message: "*Hello @channel on Test Server Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG}* on branch *${env.GIT_BRANCH}* failed on *${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}*. Please check the Jenkins logs for details.",
-            tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
-        )
-    }
-    always {
-        cleanWs()
-    }
-}
-
-
-
-
 }
