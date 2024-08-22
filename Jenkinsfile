@@ -21,16 +21,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building'
-                // Install AWS CLI if not available
-                script {
-                    sh '''
-                        if ! command -v aws &> /dev/null
-                        then
-                            echo "AWS CLI not found, installing..."
-                            apt-get update && apt-get install -y awscli
-                        fi
-                    '''
-                }
+                
                 // Download the .env file from S3
                 script {
                     withAWS(credentials: "${AWS_CREDENTIALS_ID}", region: "${AWS_REGION}") {
