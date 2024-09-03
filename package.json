@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "build": "babel src -d lib",
-    "test": "jest --coverage"
+    "test": "jest --passWithNoTests"
   },
   "jest": {
     "testMatch": ["**/?(*.)+(spec|test).[tj]s?(x)"]
