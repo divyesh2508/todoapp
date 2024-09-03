@@ -7,8 +7,8 @@
     "build": "babel src -d lib",
     "test": "jest --passWithNoTests"
   },
-  "jest": {
-    "testMatch": ["**/?(*.)+(spec|test).[tj]s?(x)"]
+"jest": {
+    "testMatch": ["**/__tests__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[tj]s?(x)"]
   },
   "author": "Divyesh",
   "license": "ISC",
