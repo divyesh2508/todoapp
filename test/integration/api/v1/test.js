@@ -1,6 +1,6 @@
 /* eslint no-undef: 0, prefer-destructuring: 0 */
 const { expect } = require('chai'),
-  server = require('../../../../server'),
+  server = require('../../../../app'),
   request = require('supertest')(server),
   fixtures = require('../../../fixtures/test.json');
 
