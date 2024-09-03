@@ -30,19 +30,19 @@ mongoose.connect("mongodb://localhost:27017", {
 });
 
 // To get the CSS file from the public folder
-// app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/public'));
 
-// // Interact with index.ejs
-// app.set("view engine", "ejs");
-// app.use(bodyParser.urlencoded({ extended: true }));
+// Interact with index.ejs
+app.set("view engine", "ejs");
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// // Mongoose schema
-// let todoSchema = new mongoose.Schema({
-//   name: String
-// });
+// Mongoose schema
+let todoSchema = new mongoose.Schema({
+  name: String
+});
 
-// let Todo = mongoose.model("Todo", todoSchema);
-
+let Todo = mongoose.model("Todo", todoSchema);
+// hello
 // Routes
 app.get("/", (req, res) => {
   Todo.find({}, (error, todoList) => {
