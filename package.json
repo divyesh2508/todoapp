@@ -4,7 +4,8 @@
   "description": "node js to do app",
   "main": "app.js",
   "scripts": {
-    "test": "mocha"
+    "build": "babel src -d lib",
+    "test": "jest"
   },
   "author": "Divyesh",
   "license": "ISC",
