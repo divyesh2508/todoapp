@@ -5,11 +5,20 @@
   "main": "app.js",
   "scripts": {
     "build": "babel src -d lib",
-    "test": "jest --passWithNoTests"
+    "coverage": "./node_modules/.bin/nyc -r cobertura -r text-summary -r html npm test",
+    "coverage-lcov": "./node_modules/.bin/nyc -r cobertura -r text-summary -r lcov npm test",
+    "test": "jest --coverage"
   },
-"jest": {
-    "testMatch": ["**/__tests__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[tj]s?(x)"]
-  },
+  "jest": {
+      "testMatch": ["**/?(*.)+(spec|test).[tj]s?(x)"],
+      "testPathIgnorePatterns": ["/node_modules/"],
+      "collectCoverageFrom": [
+        "src/**/*.{js,jsx,ts,tsx}", 
+        "!src/**/*.d.ts", 
+        "!**/node_modules/**"
+      ],
+      "coverageReporters": ["text", "lcov"]
+    },
   "author": "Divyesh",
   "license": "ISC",
   "dependencies": {
