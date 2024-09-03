@@ -5,9 +5,9 @@
   "main": "app.js",
   "scripts": {
     "build": "babel src -d lib",
+    "test": "mocha --timeout 30000 ./test/**/*.js --exit",
     "coverage": "./node_modules/.bin/nyc -r cobertura -r text-summary -r html npm test",
-    "coverage-lcov": "./node_modules/.bin/nyc -r cobertura -r text-summary -r lcov npm test",
-    "test": "jest --coverage ./test/**/*.js --exit"
+    "coverage-lcov": "./node_modules/.bin/nyc -r cobertura -r text-summary -r lcov npm test"
   },
   "jest": {
       "testMatch": ["**/?(*.)+(spec|test).[tj]s?(x)"],
