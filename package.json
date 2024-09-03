@@ -5,7 +5,10 @@
   "main": "app.js",
   "scripts": {
     "build": "babel src -d lib",
-    "test": "jest"
+    "test": "jest --coverage"
+  },
+  "jest": {
+    "testMatch": ["**/?(*.)+(spec|test).[tj]s?(x)"]
   },
   "author": "Divyesh",
   "license": "ISC",
