@@ -11,8 +11,8 @@
 
     <!-- Properties -->
     <properties>
-        <maven.compiler.source>11</maven.compiler.target>
-        <maven.compiler.target>11</maven.compiler.target> <!-- Use Java 11 -->
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <jacoco.version>0.8.8</jacoco.version> <!-- Latest JaCoCo version -->
     </properties>
 
