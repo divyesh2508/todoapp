@@ -21,6 +21,7 @@
     "chai": "^5.1.1",
     "mocha": "^10.7.0",
     "sonarqube-scanner": "^4.0.1",
-    "supertest": "^7.0.0"
+    "supertest": "^7.0.0",
+     "jest": "^27.0.0"
   }
 }
