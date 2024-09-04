@@ -54,7 +54,7 @@ pipeline {
                 // Ensure we are in the workspace directory for git commands
                 dir("${env.WORKSPACE}") {
                     def commitAuthor = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
-                    def commitMessage = sh(script: "git log -1 --pretty=format:'%s'", returnStdout: true).trim()
+                    def commitMessage = sh(script: "git log -5 --pretty=format:'%s'", returnStdout: true).trim()
                 
                     echo 'Deployment succeeded'
                     slackSend(
