@@ -15,6 +15,7 @@ pipeline {
         S3_BUCKET_NAME = "my-todo-app-test"
         ENV_FILE_PATH = ".env"
         AWS_CREDENTIALS_ID = 'aws-creds'
+        COMMIT_INFO = ''
     }
 
     stages {
@@ -64,6 +65,7 @@ pipeline {
                                  "*Branch:* ${env.GIT_BRANCH}\n" +
                                  "*Commit Author:* ${commitAuthor}\n" +
                                  "*Commit Message:* ${commitMessage}\n" +
+                                 "*Commits:* \n${env.COMMIT_INFO}\n" +
                                  "*Status:* Succeeded\n" +
                                  "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}",
                         tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
@@ -87,6 +89,7 @@ pipeline {
                                  "*Branch:* ${env.GIT_BRANCH}\n" +
                                  "*Commit Author:* ${commitAuthor}\n" +
                                  "*Commit Message:* ${commitMessage}\n" +
+                                 "*Commits:* \n${env.COMMIT_INFO}\n" +
                                  "*Status:* Failed\n" +
                                  "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}\n" +
                                  "*Please review the Jenkins logs for further information.*",
