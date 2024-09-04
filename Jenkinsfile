@@ -22,18 +22,15 @@ pipeline {
         stage('Checkout') {
             steps {
                 sh 'git config --global http.postBuffer 524288000'  // Increase buffer size for large repos
+                // Checkout the repository
                 checkout scm
             }
         }
         stage('Capture Git Info') {
             steps {
                 script {
-                    // Capture all commits from the last build to the latest commit
-                    env.COMMIT_INFO = sh(script: "git log --pretty=format:'%an: %s' HEAD~10..HEAD", returnStdout: true).trim() // Adjust 10 to the desired number of commits
-
-                    if (env.COMMIT_INFO.isEmpty()) {
-                        env.COMMIT_INFO = "No new commits."
-                    }
+                    // Capture all commits made since the last build
+                    env.COMMIT_INFO = sh(script: "git log --pretty=format:'%an: %s' HEAD~10..HEAD", returnStdout: true).trim()
                 }
             }
         }
@@ -54,39 +51,58 @@ pipeline {
     post {
         success {
             script {
-                echo 'Deployment succeeded'
-                slackSend(
-                    channel: "${env.SLACK_CHANNEL}",
-                    color: 'good',
-                    message: ":tada: *Deployment Completed Successfully* \n" +
-                             "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
-                             "*Branch:* ${env.GIT_BRANCH}\n" +
-                             "*Commits:* \n${env.COMMIT_INFO}\n" +
-                             "*Status:* Succeeded\n" +
-                             "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}",
-                    tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
-                )
+                // Ensure we are in the workspace directory for git commands
+                dir("${env.WORKSPACE}") {
+                    def commitAuthor = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
+                    def commitMessage = sh(script: "git log -5 --pretty=format:'%s'", returnStdout: true).trim()
+                
+                    echo 'Deployment succeeded'
+                    slackSend(
+                        channel: "${env.SLACK_CHANNEL}",
+                        color: 'good',
+                        message: ":tada: *Deployment Completed Successfully* \n" +
+                                 "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
+                                 "*Branch:* ${env.GIT_BRANCH}\n" +
+                                 "*Commit Author:* ${commitAuthor}\n" +
+                                 "*Commit Message:* ${commitMessage}\n" +
+                                 "*Commits:* \n${env.COMMIT_INFO}\n" +
+                                 "*Status:* Succeeded\n" +
+                                 "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}",
+                        tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+                    )
+                }
             }
         }
         failure {
             script {
-                echo 'Deployment failed'
-                slackSend(
-                    channel: "${env.SLACK_CHANNEL}",
-                    color: 'danger',
-                    message: ":alert: *Deployment Failed* \n" +
-                             "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
-                             "*Branch:* ${env.GIT_BRANCH}\n" +
-                             "*Commits:* \n${env.COMMIT_INFO}\n" +
-                             "*Status:* Failed\n" +
-                             "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}\n" +
-                             "*Please review the Jenkins logs for further information.*",
-                    tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
-                )
+                // Ensure we are in the workspace directory for git commands
+                dir("${env.WORKSPACE}") {
+                    def commitAuthor = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
+                    def commitMessage = sh(script: "git log -1 --pretty=format:'%s'", returnStdout: true).trim()
+
+                    echo 'Deployment failed'
+                    slackSend(
+                        channel: "${env.SLACK_CHANNEL}",
+                        color: 'danger',
+                        message: ":alert: *Deployment Failed* \n" +
+                                 "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
+                                 "*Branch:* ${env.GIT_BRANCH}\n" +
+                                 "*Commit Author:* ${commitAuthor}\n" +
+                                 "*Commit Message:* ${commitMessage}\n" +
+                                 "*Commits:* \n${env.COMMIT_INFO}\n" +
+                                 "*Status:* Failed\n" +
+                                 "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}\n" +
+                                 "*Please review the Jenkins logs for further information.*",
+                        tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+                    )
+                }
             }
-        }
-        always {
+             always {
             cleanWs() // Clean workspace after capturing necessary information
+            }
         }
     }
 }
+
+
+// hello this is divyesh 
