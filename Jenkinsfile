@@ -97,8 +97,5 @@ pipeline {
                 }
             }
         }
-        always {
-            cleanWs()
-        }
     }
 }
