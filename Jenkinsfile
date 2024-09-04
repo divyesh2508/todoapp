@@ -25,6 +25,14 @@ pipeline {
                 checkout scm
             }
         }
+        stage('Capture Git Info') {
+            steps {
+                script {
+                    // Capture all commits made since the last build
+                    env.COMMIT_INFO = sh(script: "git log --pretty=format:'%an: %s' ${GIT_PREVIOUS_SUCCESSFUL_COMMIT}..HEAD", returnStdout: true).trim()
+                }
+            }
+        }
         stage('Build') {
             steps {
                 echo 'Building Docker image...'
@@ -85,6 +93,9 @@ pipeline {
                         tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
                     )
                 }
+            }
+             always {
+            cleanWs() // Clean workspace after capturing necessary information
             }
         }
     }
