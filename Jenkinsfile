@@ -15,7 +15,6 @@ pipeline {
         S3_BUCKET_NAME = "my-todo-app-test"
         ENV_FILE_PATH = ".env"
         AWS_CREDENTIALS_ID = 'aws-creds'
- 
     }
 
     stages {
@@ -37,7 +36,7 @@ pipeline {
             }
         }   
         stage("Trivy Scan") {
-            steps{
+            steps {
                sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
@@ -67,37 +66,49 @@ pipeline {
     }
 
     post {
-    success {
-        echo 'Deployment succeeded'
-        slackSend(
-            channel: "${env.SLACK_CHANNEL}",
-            color: 'good',
-            message:":tada: *Hello @channel on Test Server Deployment Completed...* \n" +
-                    "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
-                    "*Branch:* ${env.GIT_BRANCH}\n" +
-                    "*Status:* Succeeded\n" +
-                    "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}",
-            // message: "*Hello @channel on Test Server Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG}* on branch *${env.GIT_BRANCH}* succesfully on *${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}*",
-            tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
-        )
+        success {
+            script {
+                def commitAuthor = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
+                def commitMessage = sh(script: "git log -1 --pretty=format:'%s'", returnStdout: true).trim()
+                
+                echo 'Deployment succeeded'
+                slackSend(
+                    channel: "${env.SLACK_CHANNEL}",
+                    color: 'good',
+                    message: ":tada: *Hello @channel on Test Server Deployment Completed...* \n" +
+                             "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
+                             "*Branch:* ${env.GIT_BRANCH}\n" +
+                             "*Commit Author:* ${commitAuthor}\n" +
+                             "*Commit Message:* ${commitMessage}\n" +
+                             "*Status:* Succeeded\n" +
+                             "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}",
+                    tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+                )
+            }
+        }
+        failure {
+            script {
+                def commitAuthor = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
+                def commitMessage = sh(script: "git log -1 --pretty=format:'%s'", returnStdout: true).trim()
+
+                echo 'Deployment failed'
+                slackSend(
+                    channel: "${env.SLACK_CHANNEL}",
+                    color: 'danger',
+                    message: ":alert: *Hello @channel on Test Server Deployment Failed...* :alert: \n" +
+                             "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
+                             "*Branch:* ${env.GIT_BRANCH}\n" +
+                             "*Commit Author:* ${commitAuthor}\n" +
+                             "*Commit Message:* ${commitMessage}\n" +
+                             "*Status:* Failed\n" +
+                             "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}\n" +
+                             "*Please review the Jenkins logs for further information.*",
+                    tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+                )
+            }
+        }
+        always {
+            cleanWs()
+        }
     }
-    failure {
-        echo 'Deployment failed'
-        slackSend(
-            channel: "${env.SLACK_CHANNEL}",
-            color: 'danger',
-            message:":alert: *Hello @channel on Test Server Deployment Failed...* :alert: \n" +
-                "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
-                "*Branch:* ${env.GIT_BRANCH}\n" +
-                "*Status:* Failed\n" +
-                "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}\n" +
-                "*Please review the Jenkins logs for further information.*",
-            // message: "*Hello @channel on Test Server Deployment of ${env.IMAGE_NAME}:${env.IMAGE_TAG}* on branch *${env.GIT_BRANCH}* failed on *${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}*. Please check the Jenkins logs for details.",
-            tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
-        )
-    }
-    always {
-        cleanWs()
-    }
-}
 }
