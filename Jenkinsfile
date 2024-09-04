@@ -37,16 +37,6 @@ pipeline {
                 }
             }
         }   
-        stage('Deploy') {
-            steps {
-                echo 'Deploying to server...'
-                sshagent(credentials: ['todo-key']) {
-                    sh '''
-                        ssh -o StrictHostKeyChecking=no 'jenkins'@$INSTANCE_IP "sh /apps/deploy-todo-app.sh"
-                    '''
-                }
-            }
-        }
     }
 
     post {
@@ -99,3 +89,6 @@ pipeline {
         }
     }
 }
+
+
+// hello this is divyesh 
