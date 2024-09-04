@@ -22,11 +22,6 @@ pipeline {
             steps {
                 echo 'Building'
                 script {
-                    withAWS(credentials: "${AWS_CREDENTIALS_ID}", region: "${AWS_REGION}") {
-                        sh 'aws s3 cp s3://${S3_BUCKET_NAME}/${ENV_FILE_PATH} .env'
-                    }
-                }
-                script {
                     def myImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
                     docker.withRegistry("${AWS_ACCOUNT_URL}", "ecr:${AWS_DEFAULT_REGION}:aws-creds") {
                         myImage.push("${IMAGE_TAG}")
