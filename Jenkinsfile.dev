@@ -1,0 +1,121 @@
+pipeline {
+    agent any
+    environment {
+        IMAGE_NAME = "balador-user-service"
+        IMAGE_TAG = "staging"
+        AWS_REGION = "me-south-1"
+        AWS_DEFAULT_REGION = "me-south-1"
+        AWS_ACCOUNT_URL = "https://808827970485.dkr.ecr.me-south-1.amazonaws.com"
+        INSTANCE_IP = '157.175.119.251'
+        GIT_BRANCH= 'staging-deployment'
+        SLACK_CHANNEL = 'balador-alerts'
+        SLACK_CREDENTIAL_ID = 'zignuts-slack-cred'
+        SERVER_NAME = 'staging server'
+    }
+    stages {
+        stage('Checkout Code') {
+            steps {
+                script {
+                    def currentBranch = scm.branches[0].name
+                    currentBranch = currentBranch.substring(currentBranch.lastIndexOf('/') + 1)
+                    if (currentBranch != "${env.GIT_BRANCH}") {
+                        error "Branch name or image tag mismatch! Build branch is '$currentBranch' and image tag is '${IMAGE_TAG}'"
+                        return
+                }
+            }
+            sh 'git config --global http.postBuffer 524288000'
+            checkout scm
+        }
+    }
+        stage('Build') {
+            steps {
+                echo 'Building'
+                echo "${IMAGE_NAME}:${IMAGE_TAG}"
+                script {
+                def myImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+                docker.withRegistry("${AWS_ACCOUNT_URL}", "ecr:${AWS_DEFAULT_REGION}:devops-balador-access-secret-key") {
+                    myImage.push("${IMAGE_TAG}")
+                }
+                }
+            }
+        }
+       stage('Deploy') {
+          steps {
+            sshagent (credentials: ['ubuntu-balador-proxy']) {
+                sh '''
+                ssh -o StrictHostKeyChecking=no 'ubuntu'@$INSTANCE_IP uname -a
+                ssh -o StrictHostKeyChecking=no 'ubuntu'@$INSTANCE_IP echo $imageName
+                ssh -o StrictHostKeyChecking=no 'ubuntu'@$INSTANCE_IP "ssh -i /home/ubuntu/keys/dooree-staging-server.pem ubuntu@157.175.29.7 sh ~/scripts/user-auto-deploy.sh"
+                '''
+             }
+          }
+       }
+    }
+    post {
+        success {
+            script{
+            dir("${env.WORKSPACE}") {
+                def commitAuthor = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
+                def commitMessage = sh(script: "git log -1 --pretty=format:'%s'", returnStdout: true).trim()
+                echo 'Deployment succeeded'
+                slackSend(
+                    channel: "${env.SLACK_CHANNEL}",
+                    color: 'good',
+                    message: ":tada: *Hello @channel on ${env.SERVER_NAME} Deployment Completed...* \n" +
+                            "*Server:* ${env.SERVER_NAME}\n"+
+                            "*Service* ${env.IMAGE_NAME}\n" +
+                            "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
+                            "*Branch:* ${env.GIT_BRANCH}\n" +
+                            "*Commit Author:* ${commitAuthor}\n" +
+                            "*Commit Message:* ${commitMessage}\n" +
+                            "*Status:* Succeeded\n" +
+                            "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}",
+                    tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+                )
+            }
+        }
+    }
+        failure {
+            script {
+                def rollbackMsg = ":alert: *Hello @channel on ${env.SERVER_NAME} Deployment Failed...* :alert: \n" +
+                                  "*Server:* ${env.SERVER_NAME}\n"+
+                                  "*Service* ${env.IMAGE_NAME}\n" +
+                                  "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
+                                  "*Branch:* ${env.GIT_BRANCH}\n" +
+                                  "*Commit Author:* ${commitAuthor}\n" +
+                                  "*Commit Message:* ${commitMessage}\n" +
+                                  "*Status:* Failed\n" +
+                                  "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}\n" +
+                                  "*Please review the Jenkins logs for further information.*"
+                if (currentBuild.result == 'FAILURE') {
+                    rollbackMsg = ":alert: *Hello @channel on ${env.SERVER_NAME} Deployment Failed...* :alert: \n" +
+                                  "*Server:* ${env.SERVER_NAME}\n"+
+                                  "*Service* ${env.IMAGE_NAME}\n" +
+                                  "*Image:* ${env.IMAGE_NAME}:${env.IMAGE_TAG}\n" +
+                                  "*Branch:* ${env.GIT_BRANCH}\n" +
+                                  "*Commit Author:* ${commitAuthor}\n" +
+                                  "*Commit Message:* ${commitMessage}\n" +
+                                  "*Status:* Failed\n" +
+                                  "*Date & Time (IST):* ${new Date().format('yyyy-MM-dd HH:mm:ss', TimeZone.getTimeZone('Asia/Kolkata'))}\n" +
+                                  "*Rollback was initiated and completed. Please review the Jenkins logs for further information.*"
+                }
+            dir("${env.WORKSPACE}") {
+                def commitAuthor = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
+                def commitMessage = sh(script: "git log -1 --pretty=format:'%s'", returnStdout: true).trim()
+                
+                slackSend(
+                    channel: "${env.SLACK_CHANNEL}",
+                    color: 'danger',
+                    message: rollbackMsg,
+                    tokenCredentialId: "${env.SLACK_CREDENTIAL_ID}"
+                )
+            }
+        }
+    }
+        always {
+            cleanWs()
+        }
+  }
+}
+
+#jaiushj
