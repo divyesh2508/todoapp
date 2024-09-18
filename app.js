@@ -24,7 +24,7 @@ var rollbar = new Rollbar({
 });
 
 // Database connection with mongoose (MongoDB)
-mongoose.connect("mongodb://localhost:27017", {
+mongoose.connect("mongodb://admin:admin@13.233.13.131:28018/", {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
