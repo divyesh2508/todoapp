@@ -43,7 +43,7 @@ jobs:
       - name: Push to Docker Hub
         run: |
           VERSION=$(cat VERSION)
-          echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u your-dockerhub-username --password-stdin
+          echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u dk2508 --password-stdin
           docker push dk2508/todo-app:$VERSION
 
       # Uncomment this section if you want to push to AWS ECR
