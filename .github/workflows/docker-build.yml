@@ -35,6 +35,11 @@ jobs:
           # Output the new version for use in later steps
           echo "::set-output name=new_version::$NEW_VERSION"
 
+      - name: Create Git Tag
+        run: |
+            NEW_VERSION=${{ steps.version.outputs.new_version }}
+            git tag $NEW_VERSION
+            git push origin $NEW_VERSION
       - name: Build Docker Image
         run: |
           VERSION=$(cat VERSION)
