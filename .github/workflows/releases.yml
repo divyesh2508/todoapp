@@ -1,0 +1,31 @@
+name: Releases
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    chnagelog:
+        runs-on: ubuntu-latest
+
+
+        steps:
+            - uses: action/checkout@v2
+
+            - name: conventional Chnagelog Action
+              id: chnagelog
+              uses: TriPSs/conventional-chnagelog-action@v3.7.1
+              with: 
+                github-token: ${{secrets.GITHUB_TOKEN}}
+
+            - name: create release
+              uses: action/create-release@v1
+              if: ${{ steps.chnagelog.outputs.skupped == 'false'}}
+              env:
+                GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+              with: 
+                tag_name: ${{steps.CHANGELOG_RELEASE}}
+                release_name: ${{steps.chnagelog.outputs.tag}}
+                body: ${{steps.chnagelog.outputs.clean_changelog}}
+
