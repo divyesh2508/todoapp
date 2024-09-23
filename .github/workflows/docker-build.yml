@@ -5,6 +5,9 @@ on:
     branches:
       - main # Change this to your default branch
 
+permissions:
+  contents: write  # Allow pushing to the repository
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -40,6 +43,7 @@ jobs:
             NEW_VERSION=${{ steps.version.outputs.new_version }}
             git tag $NEW_VERSION
             git push origin $NEW_VERSION
+
       - name: Build Docker Image
         run: |
           VERSION=$(cat VERSION)
@@ -50,17 +54,6 @@ jobs:
           VERSION=$(cat VERSION)
           echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u dk2508 --password-stdin
           docker push dk2508/todo-app:$VERSION
-
-      # Uncomment this section if you want to push to AWS ECR
-      # - name: Log in to Amazon ECR
-      #   run: |
-      #     aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
-      #
-      # - name: Tag and Push to ECR
-      #   run: |
-      #     VERSION=$(cat VERSION)
-      #     docker tag your-image-name:$VERSION <aws_account_id>.dkr.ecr.<region>.amazonaws.com/your-ecr-repo:$VERSION
-      #     docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/your-ecr-repo:$VERSION
 
       - name: Commit Version Change
         run: |
