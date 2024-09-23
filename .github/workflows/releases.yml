@@ -17,13 +17,13 @@ jobs:
         id: changelog
         uses: TriPSs/conventional-changelog-action@v3.7.1  # Fixed the repository name
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GIT_TOKEN }}
 
       - name: Create release
         uses: actions/create-release@v1  # Corrected from 'action/create-release' to 'actions/create-release'
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
         with:
           tag_name: ${{ steps.changelog.outputs.tag }}
           release_name: ${{ steps.changelog.outputs.tag }}
