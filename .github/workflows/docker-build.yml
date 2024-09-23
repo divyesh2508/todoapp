@@ -1,64 +1,64 @@
-name: Docker Build and Push
+# name: Docker Build and Push
 
-on:
-  push:
-    branches:
-      - main # Change this to your default branch
+# on:
+#   push:
+#     branches:
+#       - main # Change this to your default branch
 
-permissions:
-  contents: write  # Allow pushing to the repository
+# permissions:
+#   contents: write  # Allow pushing to the repository
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v1
 
-      - name: Increment Version
-        id: version
-        run: |
-          # Read the current version from the VERSION file
-          VERSION=$(cat VERSION)
-          # Separate the version into major, minor, and patch
-          IFS='.' read -r -a VERSION_PARTS <<< "${VERSION//v/}"
-          MAJOR=${VERSION_PARTS[0]}
-          MINOR=${VERSION_PARTS[1]}
-          PATCH=${VERSION_PARTS[2]}
-          # Increment the patch version
-          PATCH=$((PATCH + 1))
-          # Create a new version tag
-          NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
-          # Save the new version to the VERSION file
-          echo $NEW_VERSION > VERSION
-          # Output the new version for use in later steps
-          echo "::set-output name=new_version::$NEW_VERSION"
+#       - name: Increment Version
+#         id: version
+#         run: |
+#           # Read the current version from the VERSION file
+#           VERSION=$(cat VERSION)
+#           # Separate the version into major, minor, and patch
+#           IFS='.' read -r -a VERSION_PARTS <<< "${VERSION//v/}"
+#           MAJOR=${VERSION_PARTS[0]}
+#           MINOR=${VERSION_PARTS[1]}
+#           PATCH=${VERSION_PARTS[2]}
+#           # Increment the patch version
+#           PATCH=$((PATCH + 1))
+#           # Create a new version tag
+#           NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
+#           # Save the new version to the VERSION file
+#           echo $NEW_VERSION > VERSION
+#           # Output the new version for use in later steps
+#           echo "::set-output name=new_version::$NEW_VERSION"
 
-      - name: Create Git Tag
-        run: |
-            NEW_VERSION=${{ steps.version.outputs.new_version }}
-            git tag $NEW_VERSION
-            git push origin $NEW_VERSION
+#       - name: Create Git Tag
+#         run: |
+#             NEW_VERSION=${{ steps.version.outputs.new_version }}
+#             git tag $NEW_VERSION
+#             git push origin $NEW_VERSION
 
-      - name: Build Docker Image
-        run: |
-          VERSION=$(cat VERSION)
-          docker build -t dk2508/todo-app:$VERSION .
+#       - name: Build Docker Image
+#         run: |
+#           VERSION=$(cat VERSION)
+#           docker build -t dk2508/todo-app:$VERSION .
 
-      - name: Push to Docker Hub
-        run: |
-          VERSION=$(cat VERSION)
-          echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u dk2508 --password-stdin
-          docker push dk2508/todo-app:$VERSION
+#       - name: Push to Docker Hub
+#         run: |
+#           VERSION=$(cat VERSION)
+#           echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u dk2508 --password-stdin
+#           docker push dk2508/todo-app:$VERSION
 
-      - name: Commit Version Change
-        run: |
-          git config --local user.email "your-email@example.com"
-          git config --local user.name "GitHub Action"
-          git add VERSION
-          git commit -m "Increment version to ${{ steps.version.outputs.new_version }}"
-          git push
+#       - name: Commit Version Change
+#         run: |
+#           git config --local user.email "your-email@example.com"
+#           git config --local user.name "GitHub Action"
+#           git add VERSION
+#           git commit -m "Increment version to ${{ steps.version.outputs.new_version }}"
+#           git push
