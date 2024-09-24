@@ -12,16 +12,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      # Create a tag with the format 'v1.0.0-{timestamp}'
+      - name: Create Git Tag
+        id: tag_step
+        run: |
+          TAG_NAME="v1.0.0-$(date +'%Y%m%d%H%M%S')" # You can modify this for versioning
+          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
+          tag_name: ${{ env.TAG_NAME }}  # Use the dynamically created tag
+          release_name: Release ${{ env.TAG_NAME }}
           body: |
-            Changes in this Release
+            Changes in this Release:
             - First Change
             - Second Change
           draft: false
