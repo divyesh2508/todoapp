@@ -13,20 +13,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # Set up Git configuration
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       # Create a tag with the format 'v1.0.0-{timestamp}'
       - name: Create Git Tag
         id: tag_step
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # Make sure this is set in your repository secrets
         run: |
           TAG_NAME="v1.0.0-$(date +'%Y%m%d%H%M%S')" # You can modify this for versioning
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
           git tag $TAG_NAME
-          git push origin $TAG_NAME
+          git push https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }} $TAG_NAME
 
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # This token is provided by Actions
         with:
           tag_name: ${{ env.TAG_NAME }}  # Use the dynamically created tag
           release_name: Release ${{ env.TAG_NAME }}
