@@ -11,19 +11,38 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3  # Corrected from 'action/checkout' to 'actions/checkout'
+        uses: actions/checkout@v3
+
+      - name: Set up Git user
+        run: |
+          git config --global user.name "divyesh"
+          git config --global user.email "divyeshl@zignuts.com"
 
       - name: Conventional Changelog Action
         id: changelog
-        uses: TriPSs/conventional-changelog-action@v3.7.1  # Fixed the repository name
+        uses: TriPSs/conventional-changelog-action@v3.7.1
         with:
-          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN }}  # Ensure the token name is correct and added to your secrets
+
+      - name: Commit Changelog and Tag
+        run: |
+          git add CHANGELOG.md
+          git commit -m "chore(release): v${{ steps.changelog.outputs.tag }}"
+          git tag -a "v${{ steps.changelog.outputs.tag }}" -m "v${{ steps.changelog.outputs.tag }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Push changes and tags
+        run: |
+          git push origin main --follow-tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Create release
-        uses: actions/create-release@v1  # Corrected from 'action/create-release' to 'actions/create-release'
+        uses: actions/create-release@v1
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         env:
-          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           tag_name: ${{ steps.changelog.outputs.tag }}
           release_name: ${{ steps.changelog.outputs.tag }}
