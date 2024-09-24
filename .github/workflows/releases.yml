@@ -1,30 +1,29 @@
-name: Releases
-
 on:
   push:
-    branches:
-      - main
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+name: Create Release
 
 jobs:
-  changelog:
+  build:
+    name: Create Release
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3  # Corrected from 'action/checkout' to 'actions/checkout'
-
-      - name: Conventional Changelog Action
-        id: changelog
-        uses: TriPSs/conventional-changelog-action@v3.7.1  # Fixed the repository name
-        with:
-          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-
-      - name: Create release
-        uses: actions/create-release@v1  # Corrected from 'action/create-release' to 'actions/create-release'
-        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
         env:
-          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{ steps.changelog.outputs.tag }}
-          release_name: ${{ steps.changelog.outputs.tag }}
-          body: ${{ steps.changelog.outputs.clean_changelog }}
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Changes in this Release
+            - First Change
+            - Second Change
+          draft: false
+          prerelease: false
