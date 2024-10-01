@@ -1,46 +1,22 @@
+# example 1: on push to master
+name: Bump version
 on:
   push:
     branches:
       - main
 
-name: Create Release
-
 jobs:
   build:
-    name: Create Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: '0'
 
-      # Set up Git configuration
-      - name: Configure Git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      # Create a tag with the format 'v1.0.0-{timestamp}'
-      - name: Create Git Tag
-        id: tag_step
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # Make sure this is set in your repository secrets
-        run: |
-          TAG_NAME="v1.0.0-$(date +'%Y%m%d%H%M%S')" # You can modify this for versioning
-          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
-          git tag $TAG_NAME
-          git push https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }} $TAG_NAME
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # This token is provided by Actions
-        with:
-          tag_name: ${{ env.TAG_NAME }}  # Use the dynamically created tag
-          release_name: Release ${{ env.TAG_NAME }}
-          body: |
-            Changes in this Release:
-            - First Change
-            - Second Change
-          draft: false
-          prerelease: false
+    - name: Bump version and push tag
+      uses: anothrNick/github-tag-action@v1 # Don't use @master or @v1 unless you're happy to test the latest version
+      env:
+        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }} # if you don't want to set write permissions use a PAT token
+        WITH_V: false
