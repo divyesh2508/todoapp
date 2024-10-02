@@ -27,8 +27,8 @@ jobs:
         EXISTING_TAG=${GITHUB_REF#refs/tags/}
         echo "Existing tag: $EXISTING_TAG"
 
-        # Create new tag with 'uta/' prefix
-        NEW_TAG="uta/$EXISTING_TAG"
+        # Create new tag with 'prod/' prefix
+        NEW_TAG="prod/$EXISTING_TAG"
         echo "New tag: $NEW_TAG"
 
         # Create new tag and push using PAT for authentication
