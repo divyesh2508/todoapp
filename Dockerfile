@@ -16,12 +16,6 @@ CMD ["node", "app.js"]
 # hello
 # noew 
 # sd
-# saius
-# aiushs
-#ashdius
-#sda
-#s uad
-# sadsadsa
 # auisd
 #iuasui
 #sdssad
