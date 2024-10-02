@@ -1,4 +1,4 @@
-name: Create New Tag and Push Docker Image
+name: UAT Server Pipeline
 
 on:
   workflow_dispatch:
