@@ -12,25 +12,25 @@ jobs:
       with:
         fetch-depth: 0 # Ensure all tags are fetched
 
-    # Step to get the latest tag and create a new tag
+     # Step to get the latest tag and create a new tag
     - name: Get latest tag and create new tag
       id: bump
       run: |
-        # Fetch all tags
-        git fetch --tags
+       # Fetch all tags
+       git fetch --tags
 
-        # Get the latest version tag (adjust the pattern if necessary)
-        LATEST_TAG=$(git tag --list 'v*' | sort -V | tail -n 1)
-        echo "Latest tag: $LATEST_TAG"
+       # Get the latest version tag (adjust the pattern if necessary)
+       LATEST_TAG=$(git tag --list 'v*' | sort -V | tail -n 1)
+       echo "Latest tag: $LATEST_TAG"
 
-        # Increment version (based on your versioning strategy)
-        BASE_VERSION=$(echo $LATEST_TAG | sed 's/v//')
-        NEW_VERSION=$(echo $BASE_VERSION | awk -F. '{printf "%d.%d.%d", $1, $2, $3+1}')
-        NEW_TAG="uta/$NEW_VERSION"
-        echo "New tag: $NEW_TAG"
+       # Increment version (based on your versioning strategy)
+       BASE_VERSION=$(echo $LATEST_TAG | sed 's/v//')
+       NEW_VERSION=$(echo $BASE_VERSION | awk -F. '{printf "%d.%d.%d", $1, $2, $3+1}')
+       NEW_TAG="uta/$NEW_VERSION"
+       echo "New tag: $NEW_TAG"
 
-        # Create new tag and push
-        git tag $NEW_TAG
-        git push origin $NEW_TAG
+       # Create new tag and push using PAT for authentication
+       git tag $NEW_TAG
+       git push origin $NEW_TAG
       env:
-        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }} 
+        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
