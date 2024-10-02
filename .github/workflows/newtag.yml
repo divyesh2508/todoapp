@@ -2,11 +2,11 @@ name: Create New Tag and Push Docker Image
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Enter the version number (e.g., 1.0.1)'
-        required: true
-        default: '0.0.1' # Default value if user does not input
+    # inputs:
+    #   version:
+    #     description: 'Enter the version number (e.g., 1.0.1)'
+    #     required: true
+    #     default: '0.0.1' # Default value if user does not input
 
 jobs:
   build_and_push:
@@ -19,13 +19,16 @@ jobs:
       with:
         fetch-depth: 0 # Ensure all tags are fetched
 
-    # Step to create a new tag based on the input version
-    - name: Create new tag
+    # Step to create a new tag based on the existing tag
+    - name: Create new tag from existing tag
       id: bump
       run: |
-        # Get the version input
-        VERSION=${{ github.event.inputs.version }}
-        NEW_TAG="uta/$VERSION"
+        # Get the existing tag from the GitHub context
+        EXISTING_TAG=${GITHUB_REF#refs/tags/}
+        echo "Existing tag: $EXISTING_TAG"
+
+        # Create new tag with 'uta/' prefix
+        NEW_TAG="uta/$EXISTING_TAG"
         echo "New tag: $NEW_TAG"
 
         # Create new tag and push using PAT for authentication
