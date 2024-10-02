@@ -32,3 +32,5 @@ jobs:
         # Create new tag and push
         git tag $NEW_TAG
         git push origin $NEW_TAG
+      env:
+        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }} 
