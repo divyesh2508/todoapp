@@ -1,7 +1,12 @@
 name: Create New Tag and Push Docker Image
 
 on:
-  workflow_dispatch: # Allows manual triggering via GitHub Actions UI
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Enter the version number (e.g., 1.0.1)'
+        required: true
+        default: '0.0.1' # Default value if user does not input
 
 jobs:
   build_and_push:
@@ -14,21 +19,13 @@ jobs:
       with:
         fetch-depth: 0 # Ensure all tags are fetched
 
-    # Step to get the latest tag and create a new tag
-    - name: Get latest tag and create new tag
+    # Step to create a new tag based on the input version
+    - name: Create new tag
       id: bump
       run: |
-        # Fetch all tags
-        git fetch --tags
-
-        # Get the latest version tag (adjust the pattern if necessary)
-        LATEST_TAG=$(git tag --list 'v*' | sort -V | tail -n 1)
-        echo "Latest tag: $LATEST_TAG"
-
-        # Increment version (based on your versioning strategy)
-        BASE_VERSION=$(echo $LATEST_TAG | sed 's/v//')
-        NEW_VERSION=$(echo $BASE_VERSION | awk -F. '{printf "%d.%d.%d", $1, $2, $3+1}')
-        NEW_TAG="uta/$LATEST_TAG"
+        # Get the version input
+        VERSION=${{ github.event.inputs.version }}
+        NEW_TAG="uta/$VERSION"
         echo "New tag: $NEW_TAG"
 
         # Create new tag and push using PAT for authentication
