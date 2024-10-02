@@ -1,4 +1,4 @@
-name: UAT Server Pipeline
+name: PROD Server Pipeline
 
 on:
   workflow_dispatch:
