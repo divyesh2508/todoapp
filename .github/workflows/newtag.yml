@@ -28,7 +28,7 @@ jobs:
         # Increment version (based on your versioning strategy)
         BASE_VERSION=$(echo $LATEST_TAG | sed 's/v//')
         NEW_VERSION=$(echo $BASE_VERSION | awk -F. '{printf "%d.%d.%d", $1, $2, $3+1}')
-        NEW_TAG="uta/$NEW_VERSION"
+        NEW_TAG="uta/$LATEST_TAG"
         echo "New tag: $NEW_TAG"
 
         # Create new tag and push using PAT for authentication
