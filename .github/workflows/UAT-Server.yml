@@ -4,12 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       release_notes:
-        description: 'Enter the release notes (e.g., Added feature X and fixed bug Y)'
+        description: 'Enter the release notes'
         required: true
-      version:
-        description: 'Enter the version number (e.g., 1.0.1)'
-        required: true
-        default: '0.0.1'
 
 jobs:
   build_and_push:
@@ -24,7 +20,7 @@ jobs:
 
     - name: Set Git identity
       run: |
-        git config --global user.name "divyesh lagadhir"
+        git config --global user.name "Divyesh ladhir"
         git config --global user.email "divyeshl@zignuts.com"
 
     # Step to create a new tag based on the existing tag
@@ -46,7 +42,7 @@ jobs:
         # Create an annotated tag with the release notes
         git tag -a $NEW_TAG -m "$RELEASE_NOTES"
         
-        # Push new tag using PAT for authentication
+        # Push new tag with the release notes
         git push origin $NEW_TAG
       env:
         GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
