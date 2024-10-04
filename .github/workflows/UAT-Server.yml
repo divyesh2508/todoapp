@@ -22,6 +22,11 @@ jobs:
       with:
         fetch-depth: 0 # Ensure all tags are fetched
 
+    - name: Set Git identity
+      run: |
+        git config --global user.name "divyesh lagadhir"
+        git config --global user.email "divyeshl@zignuts.com"
+
     # Step to create a new tag based on the existing tag
     - name: Create new tag from existing tag
       id: bump
