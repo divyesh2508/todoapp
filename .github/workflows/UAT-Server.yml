@@ -2,10 +2,12 @@ name: UAT Server Pipeline
 
 on:
   workflow_dispatch:
-    inputs:
-      release_notes:
-        description: 'Enter the release notes (e.g., Added feature X and fixed bug Y)'
-        required: true
+    # inputs:
+    #   version:
+    #     description: 'Enter the version number (e.g., 1.0.1)'
+    #     required: true
+    #     default: '0.0.1' # Default value if user does not input
+
 jobs:
   build_and_push:
     runs-on: ubuntu-22.04
@@ -17,31 +19,20 @@ jobs:
       with:
         fetch-depth: 0 # Ensure all tags are fetched
 
-    - name: Set Git identity
-      run: |
-        git config --global user.name "divyesh lagadhir"
-        git config --global user.email "divyeshl@zignuts.com"
-
     # Step to create a new tag based on the existing tag
     - name: Create new tag from existing tag
       id: bump
       run: |
-        # Get the existing version input
-        EXISTING_TAG="${{ github.event.inputs.version }}"
-        echo "Existing version tag: $EXISTING_TAG"
+        # Get the existing tag from the GitHub context
+        EXISTING_TAG=${GITHUB_REF#refs/tags/}
+        echo "Existing tag: $EXISTING_TAG/\//"
 
-        # Create new tag with 'uta/' prefix
-        NEW_TAG="uta/$EXISTING_TAG"
+        # Create new tag with 'prod/' prefix
+        NEW_TAG="prod/$EXISTING_TAG"
         echo "New tag: $NEW_TAG"
 
-        # Get the release notes input
-        RELEASE_NOTES="${{ github.event.inputs.release_notes }}"
-        echo "Release notes: $RELEASE_NOTES"
-
-        # Create an annotated tag with the release notes
-        git tag -a $NEW_TAG -m "$RELEASE_NOTES"
-        
-        # Push new tag using PAT for authentication
+        # Create new tag and push using PAT for authentication
+        git tag $NEW_TAG
         git push origin $NEW_TAG
       env:
         GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
