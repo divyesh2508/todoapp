@@ -21,12 +21,14 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }} # if you don't want to set write permissions use a PAT token
         WITH_V: false
 
-    - name: Set up JDK
-      uses: actions/setup-java@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
       with:
-        java-version: '11' # Change if you're using a different version
-        distribution: 'temurin'
-        
+        node-version: '16' # Change to your Node.js version
+  
+    - name: Install Dependencies
+      run: npm install
+
     - name: Run SonarQube Analysis
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Ensure you have this secret set
