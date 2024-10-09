@@ -1,5 +1,5 @@
-# example 1: on push to master
 name: QA Server Pipeline
+
 on:
   push:
     branches:
@@ -16,7 +16,22 @@ jobs:
         fetch-depth: '0'
 
     - name: Bump version and push tag
-      uses: anothrNick/github-tag-action@v1 # Don't use @master or @v1 unless you're happy to test the latest version
+      uses: anothrNick/github-tag-action@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }} # if you don't want to set write permissions use a PAT token
         WITH_V: false
+
+    - name: Set up JDK
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11' # Change if you're using a different version
+
+    - name: Run SonarQube Analysis
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Ensure you have this secret set
+      run: |
+        mvn clean verify sonar:sonar \
+          -Dsonar.projectKey=test-project \
+          -Dsonar.host.url=http://20.233.62.5:9000/ \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
