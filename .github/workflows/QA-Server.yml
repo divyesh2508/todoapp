@@ -25,7 +25,8 @@ jobs:
       uses: actions/setup-java@v2
       with:
         java-version: '11' # Change if you're using a different version
-
+        distribution: 'temurin'
+        
     - name: Run SonarQube Analysis
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Ensure you have this secret set
