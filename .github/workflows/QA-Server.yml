@@ -33,8 +33,7 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Ensure you have this secret set
       run: |
-        npx clean verify sonar:sonar \
+        npx sonar:scanner \
           -Dsonar.projectKey=test-project \
           -Dsonar.host.url=http://20.233.62.5:9000/ \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-
