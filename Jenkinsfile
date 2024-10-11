@@ -20,6 +20,7 @@ pipeline {
         ENV_FILE_PATH = ".env"
         AWS_CREDENTIALS_ID = 'aws-creds'
         COMMIT_INFO = ''
+        KUBE_REPO_URL = "https://github.com/divyesh2508/todo-kube.git"
     }
 
     stages {
@@ -49,7 +50,38 @@ pipeline {
                     echo "Built and pushed Docker image: ${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
-        }   
+        }
+
+        stage('Update Kubernetes Deployment') {
+            steps {
+                // Clone the Kubernetes deployment repository
+                git url: "${KUBE_REPO_URL}", branch: 'master', credentialsId: "divyesh-git-cred"
+                
+                // Update the image tag in the deployment YAML file
+                sh """
+                    sed -i 's|<tag>|${IMAGE_TAG}|g' dev/apache/apache_deployment.yaml
+                """
+
+
+                // Commit and push changes back to GitHub
+                sh """
+                    git config user.name "divyeshl"
+                    git config user.email "divyeshl@zignuts.com"
+                    git add dev/apache/apache_deployment.yaml
+                    git commit -m "Update image tag to ${IMAGE_TAG}"
+                    git push origin main
+                """
+
+                // Apply the updated Kubernetes deployment file
+                sh "kubectl apply -f path/to/deployment.yaml"
+                
+                echo "Updated Kubernetes deployment with image tag: ${IMAGE_TAG}"
+            }
+        }
+    }
+
+
+
     }
 
     post {
