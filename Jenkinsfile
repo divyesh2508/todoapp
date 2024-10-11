@@ -61,6 +61,7 @@ pipeline {
                 sh """
                     sed -i 's|<tag>|${IMAGE_TAG}|g' dev/apache/apache_deployment.yaml
                 """
+                sh "cat dev/apache/apache_deployment.yaml"
 
 
                 // Commit and push changes back to GitHub
