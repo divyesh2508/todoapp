@@ -20,7 +20,7 @@ pipeline {
         ENV_FILE_PATH = ".env"
         AWS_CREDENTIALS_ID = 'aws-creds'
         COMMIT_INFO = ''
-        KUBE_REPO_URL = "git@github.com:divyesh2508/todo-kube.git"
+        KUBE_REPO_URL = "https://github.com/divyesh2508/todo-kube.git"
     }
 
     stages {
