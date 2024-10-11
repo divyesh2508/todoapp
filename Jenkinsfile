@@ -64,14 +64,19 @@ pipeline {
                 sh "cat dev/apache/apache_deployment.yaml"
 
 
-                // Commit and push changes back to GitHub
-                sh """
-                    git config user.name "divyesh2508"
-                    git config user.email "divyeshl@zignuts.com"
-                    git add dev/apache/apache_deployment.yaml
-                    git commit -m "Update image tag to ${IMAGE_TAG}"
-                    git push origin main
-                """
+                // Commit and push changes back to GitHub with credentials
+        withCredentials([usernamePassword(credentialsId: 'divyesh-git-cred', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+            sh """
+                git config user.name "divyesh2508"
+                git config user.email "divyeshl@zignuts.com"
+                git add dev/apache/apache_deployment.yaml
+                git commit -m "Update image tag to ${IMAGE_TAG}"
+                
+                // Set authenticated URL and push changes
+                git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/divyesh2508/todo-kube.git
+                git push origin main
+            """
+        }
 
                 // Apply the updated Kubernetes deployment file
                 sh "kubectl apply -f path/to/deployment.yaml"
