@@ -66,7 +66,7 @@ pipeline {
 
                 // Commit and push changes back to GitHub
                 sh """
-                    git config user.name "divyeshl"
+                    git config user.name "divyesh2508"
                     git config user.email "divyeshl@zignuts.com"
                     git add dev/apache/apache_deployment.yaml
                     git commit -m "Update image tag to ${IMAGE_TAG}"
