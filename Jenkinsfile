@@ -1,9 +1,13 @@
 pipeline {
     agent any
+    
+    parameters {
+        string(name: 'DOCKER_TAG', defaultValue: 'latest', description: 'Docker tag for the image')
+    }
 
     environment {
         IMAGE_NAME = "todo-app"
-        IMAGE_TAG = "latest"
+        IMAGE_TAG = "${DOCKER_TAG}"
         AWS_REGION = "ap-south-1"
         AWS_DEFAULT_REGION = "ap-south-1"
         AWS_ACCOUNT_URL = "https://910253526187.dkr.ecr.ap-south-1.amazonaws.com"
