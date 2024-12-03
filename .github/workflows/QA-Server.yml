@@ -1,46 +1,30 @@
-name: QA Server Pipeline
+name: Run Script on Server
 
 on:
   push:
     branches:
-      - main
+      - main # Replace with the branch you want to trigger the script
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: write
+  run-script:
+    runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
       with:
-        fetch-depth: '0'
+        ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-    - name: Bump version and push tag
-      uses: anothrNick/github-tag-action@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }} # if you don't want to set write permissions use a PAT token
-        WITH_V: false
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16' # Change to your Node.js version
-    - name: Set up Java
-      uses: actions/setup-java@v2
-      with:
-        java-version: '17' # Use Java 17
-        distribution: 'adopt'
-    - name: Install Dependencies
-      run: npm install
-
-    - name: Install Sonar Scanner
-      run: npm install sonar-scanner --save-dev
-
-    - name: Run SonarQube Analysis
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Ensure you have this secret set
+    - name: Execute Script on Server
       run: |
-        npx sonar-scanner \
-          -Dsonar.projectKey=test-project \
-          -Dsonar.host.url=http://20.233.62.5:9000/ \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        ssh -o StrictHostKeyChecking=no ubuntu@57.128.216.192 << 'EOF'
+          # Navigate to the script's directory if necessary
+          sh /apps/dev-env/create-file.sh
+
+
+          # Optional: Check for errors or success
+          echo "Script execution completed!"
+        EOF
