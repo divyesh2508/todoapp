@@ -1,30 +1,88 @@
-name: Run Script on Server
+name: QA Server Pipeline
 
 on:
   push:
     branches:
-      - main # Replace with the branch you want to trigger the script
+      - main
+
+permissions:
+  contents: read  # For checking out the repository
 
 jobs:
-  run-script:
+  release:
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+    name: Release and SonarQube Analysis
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: Set up SSH
-      uses: webfactory/ssh-agent@v0.5.3
-      with:
-        ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '21'
 
-    - name: Execute Script on Server
-      run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@57.128.216.192 << 'EOF'
-          # Navigate to the script's directory if necessary
-          sh /apps/dev-env/create-file.sh
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
 
+      - name: Install dependencies
+        run: npm ci
 
-          # Optional: Check for errors or success
-          echo "Script execution completed!"
-        EOF
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npx semantic-release
+
+      # - name: Install Sonar Scanner
+      #   run: npm install sonar-scanner --save-dev
+
+      # - name: Run SonarQube Analysis
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   run: |
+      #     npx sonar-scanner \
+      #       -Dsonar.projectKey=api.greenerherd.com-animal-record-service \
+      #       -Dsonar.host.url=${{ secrets.SONAR_URL }} \
+      #       -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+      - name: Get Latest Tag
+        id: latest-tag
+        run: |
+          if [ -z "${{ steps.release.outputs.nextRelease.version }}" ]; then
+            latest_tag=$(git describe --tags --abbrev=0)
+            echo "LATEST_TAG=$latest_tag" >> $GITHUB_ENV
+          else
+            echo "LATEST_TAG=v${{ steps.release.outputs.nextRelease.version }}" >> $GITHUB_ENV
+          fi     
+      
+      - name: Authenticate with Google Cloud
+        run: |
+          printf "%s" '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > gcp-key.json
+          gcloud auth activate-service-account --key-file=gcp-key.json
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+
+      # Configure Docker to use Google Artifact Registry
+      - name: Configure Docker for GCP Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+
+      # Build and Push Docker Image to Google Artifact Registry
+      - name: Build and Push Docker Image
+        run: |
+          safe_tag=$(echo "${{ env.LATEST_TAG }}" | tr '/' '-')
+          echo "Safe Tag: $safe_tag"
+
+          IMAGE_NAME=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_ARTIFACT_REPOSITORY }}/${{ secrets.GCP_IMAGE_NAME }}
+
+          docker build -t $IMAGE_NAME:$safe_tag .
+          docker push $IMAGE_NAME:$safe_tag
