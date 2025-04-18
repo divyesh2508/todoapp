@@ -1,47 +1,47 @@
-name: UAT Server Pipeline
+# name: UAT Server Pipeline
 
-on:
-  workflow_dispatch:
-    inputs:
-      release_notes:
-        description: 'Enter the release notes for the tag (e.g., Added feature X and fixed bug Y)'
-        required: true
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       release_notes:
+#         description: 'Enter the release notes for the tag (e.g., Added feature X and fixed bug Y)'
+#         required: true
 
 
-jobs:
-  build_and_push:
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: write
+# jobs:
+#   build_and_push:
+#     runs-on: ubuntu-22.04
+#     permissions:
+#       contents: write
 
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0 # Ensure all tags are fetched
+#     steps:
+#     - uses: actions/checkout@v4
+#       with:
+#         fetch-depth: 0 # Ensure all tags are fetched
 
-    - name: Set Git identity
-      run: |
-          git config --global user.name "Divyesh Lagadhir"
-          git config --global user.email "divyeshl@zignuts.com "
+#     - name: Set Git identity
+#       run: |
+#           git config --global user.name "Divyesh Lagadhir"
+#           git config --global user.email "divyeshl@zignuts.com "
 
-    # Step to create a new tag based on the existing tag
-    - name: Create new tag from existing tag
-      id: bump
-      run: |
-        # Get the existing tag from the GitHub context
-        EXISTING_TAG=${GITHUB_REF#refs/tags/}
-        echo "Existing tag: $EXISTING_TAG/\//"
+#     # Step to create a new tag based on the existing tag
+#     - name: Create new tag from existing tag
+#       id: bump
+#       run: |
+#         # Get the existing tag from the GitHub context
+#         EXISTING_TAG=${GITHUB_REF#refs/tags/}
+#         echo "Existing tag: $EXISTING_TAG/\//"
 
-        # Create new tag with 'prod/' prefix
-        NEW_TAG="prod/$EXISTING_TAG"
-        echo "New tag: $NEW_TAG"
+#         # Create new tag with 'prod/' prefix
+#         NEW_TAG="prod/$EXISTING_TAG"
+#         echo "New tag: $NEW_TAG"
 
-        # Get the release notes input
-        RELEASE_NOTES="${{ github.event.inputs.release_notes }}"
-        echo "Release notes: $RELEASE_NOTES"
+#         # Get the release notes input
+#         RELEASE_NOTES="${{ github.event.inputs.release_notes }}"
+#         echo "Release notes: $RELEASE_NOTES"
 
-        # Create new tag and push using PAT for authentication
-        git tag $NEW_TAG -m "$RELEASE_NOTES"
-        git push origin $NEW_TAG
-      env:
-        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+#         # Create new tag and push using PAT for authentication
+#         git tag $NEW_TAG -m "$RELEASE_NOTES"
+#         git push origin $NEW_TAG
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
