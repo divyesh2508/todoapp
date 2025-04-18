@@ -40,7 +40,25 @@ jobs:
         docker rmi $ECR_REPOSITORY:$IMAGE_TAG
         docker rmi $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-    # - name: Update kubeconfig and restart deployment
-    #   run: |
-    #     aws eks update-kubeconfig --region eu-west-1 --name Cluster-Production
-    #     kubectl rollout restart deployment -n production gymfans-admin-deployment
+    - name: Update kubeconfig and restart deployment
+      run: |
+        aws eks update-kubeconfig --region eu-west-1 --name Cluster-Production
+        kubectl rollout restart deployment -n production gymfans-admin-deployment
+        - name: Install kops and kubectl
+        run: |
+          curl -Lo kops https://github.com/kubernetes/kops/releases/download/v1.28.0/kops-linux-amd64
+          chmod +x kops
+          sudo mv kops /usr/local/bin/
+          
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+    - name: Export kubeconfig using Kops
+      run: |
+         mkdir -p ~/.kube
+         kops export kubecfg --admin=87600h0m0s --state=s3://gymfans-kops-cluster-stage --name=k8s.gymfans.com
+
+    - name: Restart Kubernetes Deployment
+      run: |
+        kubectl rollout restart deployment gymfans-admin-deployment -n development
