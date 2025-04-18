@@ -40,12 +40,8 @@ jobs:
         docker rmi $ECR_REPOSITORY:$IMAGE_TAG
         docker rmi $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-    - name: Update kubeconfig and restart deployment
+    - name: Install kops and kubectl
       run: |
-        aws eks update-kubeconfig --region eu-west-1 --name Cluster-Production
-        kubectl rollout restart deployment -n production gymfans-admin-deployment
-        - name: Install kops and kubectl
-        run: |
           curl -Lo kops https://github.com/kubernetes/kops/releases/download/v1.28.0/kops-linux-amd64
           chmod +x kops
           sudo mv kops /usr/local/bin/
