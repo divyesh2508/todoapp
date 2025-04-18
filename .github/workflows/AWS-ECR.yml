@@ -30,7 +30,7 @@ jobs:
 
     - name: Build, tag, and push image to ECR
       env:
-        ECR_REGISTRY: 910253526187.dkr.ecr.us-east-1.amazonaws.com/
+        ECR_REGISTRY: 910253526187.dkr.ecr.us-east-1.amazonaws.com
         ECR_REPOSITORY: web-app
         IMAGE_TAG: dev
       run: |
